@@ -27,3 +27,13 @@
 *.exe
 *.out
 *.app
+
+build/*
+
+*.pyc
+
+*.lock-waf_*
+*.waf-*
+
+/logger.cfg
+/debug_*.log

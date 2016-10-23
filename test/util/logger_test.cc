@@ -204,7 +204,7 @@ TEST(TestLogger, WriteToLogInLoop) {
       LOG_TRACE("Logging from loop. Iteration #" << i);
     }
     const auto log_content = GetLogOutput();
-    TestContains(log_content, "Logging from loop. Iteration #21000");
+    TestContains(log_content, "Logging from loop. Iteration #11000");
   };
 
   InitLoggerAndRunTest(action);

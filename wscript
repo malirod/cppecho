@@ -66,7 +66,7 @@ def configure(ctx):
             print('log4cplus submodule is not found. Running'
                   ' `git submodule update --init --recursive`')
             run_cmd(ctx, 'git submodule update --init --recursive')
-        log4cplus_build_dir_name = 'build-{}'.format(ctx.env.CXX.name)
+        log4cplus_build_dir_name = 'build-{}'.format(ctx.env.CXX_NAME)
         log4cplus_build_dir = os.path.join(log4cplus_home,
                                            log4cplus_build_dir_name)
         if not os.path.isdir(log4cplus_home):

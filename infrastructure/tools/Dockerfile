@@ -24,3 +24,8 @@ RUN git checkout ${BOOST_BRANCH}
 RUN tar -xzf build.tar.gz
 
 WORKDIR $PROJECT_ROOT
+
+# Preconfigure thirdparties with Clang
+RUN ./waf configure
+# Preconfigure thirdparties with Gcc
+RUN ./waf configure --check-cxx-compiler=g++

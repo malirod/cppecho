@@ -16,7 +16,7 @@ CPP_FLAGS = [
     '-Ithirdparty/gtest',
     '-I.',
     '-I${BOOST_HOME}/include',
-    '-Ithirdparty/log4cplus/build']
+    '-Ithirdparty/log4cplus/build-clang/include']
 
 
 SOURCE_EXTENSIONS = ['.cpp', '.cxx', '.cc', '.c', '.m', '.mm']

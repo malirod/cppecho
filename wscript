@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sys
+import contextlib
 import shutil
 from waflib.Build import (BuildContext, CleanContext, # pylint: disable=import-error
                           InstallContext, UninstallContext)
 from waflib.Tools.compiler_cxx import cxx_compiler # pylint: disable=import-error
-# Force import of module from not correct dir\package
-sys.path.append('infrastructure/tools/utils')
-from utils import working_directory
 
 top = '.' # pylint: disable=invalid-name
 out = 'build' # pylint: disable=invalid-name
@@ -49,6 +46,18 @@ def configure(ctx):
         ret = subprocess.call(cmd_line, shell=True)
         if ret != 0:
             ctx.fatal('Command failed with exit code {}'.format(ret))
+
+    @contextlib.contextmanager
+    def working_directory(path):
+        """ A context manager which changes the working directory to the given
+        path, and then changes it back to it's previous value on exit.
+        """
+        prev_cwd = os.getcwd()
+        os.chdir(path)
+        try:
+            yield
+        finally:
+            os.chdir(prev_cwd)
 
     def setup_submodules(ctx):
         #Setup log4cplus
@@ -118,16 +127,10 @@ def post_build(dummy_ctx):
 
 def build(ctx):
     from multiprocessing import cpu_count
-    if not ctx.variant:
-        ctx.variant = 'debug'
-
     ctx.jobs = cpu_count()
     ctx.add_post_fun(post_build)
-
-
     ctx.program(source=ctx.path.ant_glob(['src/**/*.cc']),
                 target='echosrv')
-
     ctx.program(source=ctx.path.ant_glob(['src/**/*.cc',
                                           'test/**/*.cc',
                                           'thirdparty/gtest/*.cc'],

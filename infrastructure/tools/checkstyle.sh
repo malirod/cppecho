@@ -127,7 +127,7 @@ echo -e "$TEXT_INFO" "PASSED" "$TEXT_DEFAULT"
 echo -e "$TEXT_INFO" "Checking cpp style with cpplint" "$TEXT_DEFAULT"
 
 if [ -n "$CPP_FILES" ]; then
-    cpplint --recursive src/* test/* $CPP_FILES
+    python infrastructure/tools/cpplint/cpplint.py $CPP_FILES
     if [ "$?" -ne "0" ]; then
         echo -e "$TEXT_ERROR" "Cpplint reports about issues in cpp files" "$TEXT_DEFAULT"
         exit 3

@@ -3,6 +3,7 @@
 import os
 import contextlib
 import shutil
+from multiprocessing import cpu_count
 from waflib.Build import (BuildContext, CleanContext, # pylint: disable=import-error
                           InstallContext, UninstallContext)
 from waflib.Tools.compiler_cxx import cxx_compiler # pylint: disable=import-error
@@ -88,9 +89,17 @@ def configure(ctx):
         ctx.msg('Setup submudules', 'ok')
 
     def setup_common(ctx):
+        boost_home = os.getenv('BOOST_HOME')
+        if boost_home is None:
+            ctx.fatal('BOOST_HOME is not set')
+        boost_include_path = os.path.join(boost_home, "include")
+        boost_libs_path = os.path.join(boost_home, "lib")
+        ctx.env.STLIB += ['log4cplus']
         ctx.env.CXXFLAGS += ['-std=c++11', '-Wextra', '-Werror', '-Wpedantic']
+        ctx.env.LIBPATH += [boost_libs_path]
         ctx.env.LIB += ['pthread']
-        ctx.env.INCLUDES += ['src', 'thirdparty/gtest']
+        ctx.env.INCLUDES += ['src', 'thirdparty/gtest', boost_include_path]
+        ctx.env.STLIB += ['log4cplus', 'boost_program_options']
         # Setup required components (submodules)
         setup_submodules(ctx)
 
@@ -102,6 +111,7 @@ def configure(ctx):
         shutil.copyfile(src_cfg,
                         dest_logger_cfg)
 
+    ctx.jobs = cpu_count()
     # Setup debug configuration
     ctx.setenv('debug')
     ctx.load('compiler_cxx')
@@ -126,8 +136,6 @@ def post_build(dummy_ctx):
 
 
 def build(ctx):
-    from multiprocessing import cpu_count
-    ctx.jobs = cpu_count()
     ctx.add_post_fun(post_build)
     ctx.program(source=ctx.path.ant_glob(['src/**/*.cc']),
                 target='echosrv')

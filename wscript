@@ -67,25 +67,31 @@ def configure(ctx):
             print('log4cplus submodule is not found. Running'
                   ' `git submodule update --init --recursive`')
             run_cmd(ctx, 'git submodule update --init --recursive')
-        log4cplus_build_dir_name = 'build-{}'.format(ctx.env.CXX_NAME)
+        log4cplus_build_dir_name = 'build'
         log4cplus_build_dir = os.path.join(log4cplus_home,
                                            log4cplus_build_dir_name)
+        log4cplus_build_dir_cxx = log4cplus_build_dir + '-{}'.format(ctx.env.CXX_NAME)
         if not os.path.isdir(log4cplus_home):
             ctx.fatal('Failed to init log4cplus')
-        if not os.path.isdir(log4cplus_build_dir):
+        if not os.path.isdir(log4cplus_build_dir_cxx):
             with working_directory(log4cplus_home):
                 run_cmd(ctx, './scripts/fix-timestamps.sh')
                 run_cmd(ctx, './configure CXX="{}" --disable-shared'
                              ' --enable-static --prefix=$PWD/{}'.format(ctx.env.CXX[0],
                                                                         log4cplus_build_dir_name))
                 run_cmd(ctx, 'make -j$(nproc) && make install')
-        if not os.path.isdir(log4cplus_build_dir):
+                # Rename build dir and make some leanup
+                os.rename(log4cplus_build_dir,
+                          log4cplus_build_dir_cxx)
+                run_cmd(ctx, 'make uninstall && make clean')
+        if not os.path.isdir(log4cplus_build_dir_cxx):
             ctx.fatal('Failed to build log4cplus')
-        ctx.env.LOG4CPLUS_BUILD_DIR = log4cplus_build_dir
-        ctx.env.INCLUDES += [os.path.join(log4cplus_build_dir, 'include')]
-        ctx.env.LIBPATH += [os.path.join(log4cplus_build_dir, 'lib')]
+        # Setup compilation flags
+        ctx.env.LOG4CPLUS_BUILD_DIR = log4cplus_build_dir_cxx
+        ctx.env.INCLUDES += [os.path.join(log4cplus_build_dir_cxx, 'include')]
+        ctx.env.LIBPATH += [os.path.join(log4cplus_build_dir_cxx, 'lib')]
         ctx.env.STLIB += ['log4cplus']
-        ctx.msg('Log4cplus configuration:', log4cplus_build_dir)
+        ctx.msg('Log4cplus configuration:', log4cplus_build_dir_cxx)
         ctx.msg('Setup submudules', 'ok')
 
     def setup_common(ctx):

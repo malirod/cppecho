@@ -143,7 +143,7 @@ echo -e "$TEXT_INFO" "PASSED" "$TEXT_DEFAULT"
 echo -e "$TEXT_INFO" "Checking cpp code with cppcheck" "$TEXT_DEFAULT"
 
 if [ -n "$CPP_FILES" ]; then
-    infrastructure/tools/cppcheck/cppcheck --error-exitcode=1 --std=c++11 --std=posix --platform=unix64 --enable=all --inconclusive -Isrc $CPP_FILES
+    infrastructure/tools/cppcheck/cppcheck -j $(nproc) --error-exitcode=1 --std=c++11 --std=posix --platform=unix64 --enable=warning,style,performance,portability,information,missingInclude --template='{id}:{file}:{line} {message}' --suppressions-list=infrastructure/tools/cppcheck/suppressions --inline-suppr --inconclusive -Isrc $CPP_FILES
 
     if [ "$?" -ne "0" ]; then
         echo -e "$TEXT_ERROR" "Cppcheck reports about issues in cpp files" "$TEXT_DEFAULT"

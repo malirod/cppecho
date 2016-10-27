@@ -36,4 +36,4 @@ build/*
 *.waf-*
 
 /logger.cfg
-/debug_*.log
+/debug.log

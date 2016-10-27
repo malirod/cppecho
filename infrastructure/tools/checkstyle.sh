@@ -9,12 +9,14 @@ TEXT_ERROR="\\033[1;31m"
 TEXT_UNDERLINE="\\0033[4m"
 TEXT_BOLD="\\0033[1m"
 
+GIT_DIFF_IGNORE_LIST=":!infrastructure/tools/cpplint/* :!infrastructure/tools/cpplint/* :!thirdparty/*"
+
 ##################################################################
 ### Check for odd whitespace
 ##################################################################
 
 echo -e "$TEXT_INFO" "Checking odd whitespaces" "$TEXT_DEFAULT"
-git diff --check $COMMITS_RANGE --color
+git diff --check $COMMITS_RANGE --color -- . $GIT_DIFF_IGNORE_LIST
 if [ "$?" -ne "0" ]; then
     echo -e "$TEXT_ERROR" "Your changes introduce whitespace errors" "$TEXT_DEFAULT"
     exit 1
@@ -61,7 +63,7 @@ patch="/tmp/$prefix-$suffix.patch"
 # clean up any older clang-format patches
 $DELETE_OLD_PATCHES && rm -f /tmp/$prefix*.patch
 
-CPP_FILES=$(git diff $COMMITS_RANGE --name-only --diff-filter=ACM | grep -e "\.cc$" -e "\.cpp$" -e "\.c$" -e "\.h$" -e "\.hpp$")
+CPP_FILES=$(git diff $COMMITS_RANGE --name-only --diff-filter=ACM -- . $GIT_DIFF_IGNORE_LIST | grep -e "\.cc$" -e "\.cpp$" -e "\.c$" -e "\.h$" -e "\.hpp$")
 
 # create one patch containing all changes to the files
 # git diff-index --cached --diff-filter=ACMR --name-only $against -- | while read file;
@@ -108,7 +110,7 @@ echo -e "$TEXT_INFO" "PASSED" "$TEXT_DEFAULT"
 echo -e "$TEXT_INFO" "Checking python style with pylint" "$TEXT_DEFAULT"
 
 # wscript is a python script
-PYTHON_FILES=$(git diff $COMMITS_RANGE --name-only --diff-filter=ACM | grep -e "\.py$" -e "wscript")
+PYTHON_FILES=$(git diff $COMMITS_RANGE --name-only --diff-filter=ACM -- . $GIT_DIFF_IGNORE_LIST | grep -e "\.py$" -e "wscript")
 
 if [ -n "$PYTHON_FILES" ]; then
     pylint --rcfile=.pylintrc $PYTHON_FILES
@@ -127,7 +129,7 @@ echo -e "$TEXT_INFO" "PASSED" "$TEXT_DEFAULT"
 echo -e "$TEXT_INFO" "Checking cpp style with cpplint" "$TEXT_DEFAULT"
 
 if [ -n "$CPP_FILES" ]; then
-    cpplint --recursive src/* test/* $CPP_FILES
+    python infrastructure/tools/cpplint/cpplint.py $CPP_FILES
     if [ "$?" -ne "0" ]; then
         echo -e "$TEXT_ERROR" "Cpplint reports about issues in cpp files" "$TEXT_DEFAULT"
         exit 3
@@ -143,7 +145,7 @@ echo -e "$TEXT_INFO" "PASSED" "$TEXT_DEFAULT"
 echo -e "$TEXT_INFO" "Checking cpp code with cppcheck" "$TEXT_DEFAULT"
 
 if [ -n "$CPP_FILES" ]; then
-    infrastructure/tools/cppcheck/cppcheck --error-exitcode=1 --std=c++11 --std=posix --platform=unix64 --enable=all --inconclusive -Isrc $CPP_FILES
+    infrastructure/tools/cppcheck/cppcheck -j $(nproc) --error-exitcode=1 --std=c++11 --std=posix --platform=unix64 --enable=warning,style,performance,portability,information,missingInclude --template='{id}:{file}:{line} {message}' --suppressions-list=infrastructure/tools/cppcheck/suppressions --inline-suppr --inconclusive -Isrc $CPP_FILES
 
     if [ "$?" -ne "0" ]; then
         echo -e "$TEXT_ERROR" "Cppcheck reports about issues in cpp files" "$TEXT_DEFAULT"

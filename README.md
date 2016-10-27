@@ -52,15 +52,7 @@ This will allow to perform some code checks locally before posting changes to se
 
 `sudo apt-get install pylint`
 
-##Install cpplint - c++ style checker
-
-```
-sudo apt-get install python-pip
-sudo pip install cpplint
-```
-
 ##Build
-
 
 ####Build commands
 - `build` - debug build

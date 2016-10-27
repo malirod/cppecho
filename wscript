@@ -3,6 +3,7 @@
 import os
 import contextlib
 import shutil
+from multiprocessing import cpu_count
 from waflib.Build import (BuildContext, CleanContext, # pylint: disable=import-error
                           InstallContext, UninstallContext)
 from waflib.Tools.compiler_cxx import cxx_compiler # pylint: disable=import-error
@@ -66,31 +67,45 @@ def configure(ctx):
             print('log4cplus submodule is not found. Running'
                   ' `git submodule update --init --recursive`')
             run_cmd(ctx, 'git submodule update --init --recursive')
-        log4cplus_build_dir_name = 'build-{}'.format(ctx.env.CXX_NAME)
+        log4cplus_build_dir_name = 'build'
         log4cplus_build_dir = os.path.join(log4cplus_home,
                                            log4cplus_build_dir_name)
+        log4cplus_build_dir_cxx = log4cplus_build_dir + '-{}'.format(ctx.env.CXX_NAME)
         if not os.path.isdir(log4cplus_home):
             ctx.fatal('Failed to init log4cplus')
-        if not os.path.isdir(log4cplus_build_dir):
+        if not os.path.isdir(log4cplus_build_dir_cxx):
             with working_directory(log4cplus_home):
                 run_cmd(ctx, './scripts/fix-timestamps.sh')
                 run_cmd(ctx, './configure CXX="{}" --disable-shared'
                              ' --enable-static --prefix=$PWD/{}'.format(ctx.env.CXX[0],
                                                                         log4cplus_build_dir_name))
                 run_cmd(ctx, 'make -j$(nproc) && make install')
-        if not os.path.isdir(log4cplus_build_dir):
+                # Rename build dir and make some leanup
+                os.rename(log4cplus_build_dir,
+                          log4cplus_build_dir_cxx)
+                run_cmd(ctx, 'make uninstall && make clean')
+        if not os.path.isdir(log4cplus_build_dir_cxx):
             ctx.fatal('Failed to build log4cplus')
-        ctx.env.LOG4CPLUS_BUILD_DIR = log4cplus_build_dir
-        ctx.env.INCLUDES += [os.path.join(log4cplus_build_dir, 'include')]
-        ctx.env.LIBPATH += [os.path.join(log4cplus_build_dir, 'lib')]
+        # Setup compilation flags
+        ctx.env.LOG4CPLUS_BUILD_DIR = log4cplus_build_dir_cxx
+        ctx.env.INCLUDES += [os.path.join(log4cplus_build_dir_cxx, 'include')]
+        ctx.env.LIBPATH += [os.path.join(log4cplus_build_dir_cxx, 'lib')]
         ctx.env.STLIB += ['log4cplus']
-        ctx.msg('Log4cplus configuration:', log4cplus_build_dir)
+        ctx.msg('Log4cplus configuration:', log4cplus_build_dir_cxx)
         ctx.msg('Setup submudules', 'ok')
 
     def setup_common(ctx):
+        boost_home = os.getenv('BOOST_HOME')
+        if boost_home is None:
+            ctx.fatal('BOOST_HOME is not set')
+        boost_include_path = os.path.join(boost_home, "include")
+        boost_libs_path = os.path.join(boost_home, "lib")
+        ctx.env.STLIB += ['log4cplus']
         ctx.env.CXXFLAGS += ['-std=c++11', '-Wextra', '-Werror', '-Wpedantic']
+        ctx.env.LIBPATH += [boost_libs_path]
         ctx.env.LIB += ['pthread']
-        ctx.env.INCLUDES += ['src', 'thirdparty/gtest']
+        ctx.env.INCLUDES += ['src', 'thirdparty/gtest', boost_include_path]
+        ctx.env.STLIB += ['log4cplus', 'boost_program_options']
         # Setup required components (submodules)
         setup_submodules(ctx)
 
@@ -102,6 +117,7 @@ def configure(ctx):
         shutil.copyfile(src_cfg,
                         dest_logger_cfg)
 
+    ctx.jobs = cpu_count()
     # Setup debug configuration
     ctx.setenv('debug')
     ctx.load('compiler_cxx')
@@ -126,8 +142,6 @@ def post_build(dummy_ctx):
 
 
 def build(ctx):
-    from multiprocessing import cpu_count
-    ctx.jobs = cpu_count()
     ctx.add_post_fun(post_build)
     ctx.program(source=ctx.path.ant_glob(['src/**/*.cc']),
                 target='echosrv')

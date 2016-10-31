@@ -105,7 +105,7 @@ def configure(ctx):
         ctx.env.LIBPATH += [boost_libs_path]
         ctx.env.LIB += ['pthread']
         ctx.env.INCLUDES += ['src', 'thirdparty/gtest', boost_include_path]
-        ctx.env.STLIB += ['log4cplus', 'boost_program_options']
+        ctx.env.STLIB += ['log4cplus', 'boost_program_options', 'boost_system']
         # Setup required components (submodules)
         setup_submodules(ctx)
 

@@ -4,12 +4,14 @@
 #include <iostream>
 #include "boost/asio/signal_set.hpp"
 #include "core/async.h"
+#include "core/default_scheduler_accessor.h"
 #include "core/startup_config.h"
 #include "core/thread_pool.h"
 #include "core/version.h"
 #include "model/engine_config.h"
 #include "model/general_error.h"
 #include "util/logger.h"
+#include "util/scope_guard.h"
 #include "util/smartptr_util.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -35,11 +37,15 @@ class EngineLauncher {
 
   std::error_code Init();
 
+  void DeInit();
+
   std::error_code DoRun();
 
   std::unique_ptr<StartupConfig> startup_config_;
 
   std::unique_ptr<IEngine> engine_;
+
+  std::unique_ptr<ThreadPool> thread_pool_;
 };
 
 EngineLauncher::EngineLauncher(std::unique_ptr<StartupConfig> startup_config)
@@ -48,9 +54,11 @@ EngineLauncher::EngineLauncher(std::unique_ptr<StartupConfig> startup_config)
 std::error_code EngineLauncher::Init() {
   LOG_AUTO_TRACE();
 
-  const int default_thread_pool_size = std::thread::hardware_concurrency();
-  auto default_thread_pool =
-      util::make_unique<ThreadPool>(default_thread_pool_size, "main");
+  const int thread_pool_size = std::thread::hardware_concurrency();
+  thread_pool_ = util::make_unique<ThreadPool>(thread_pool_size, "main");
+
+  GetDefaultIoServiceAccessorInstance().Attach(*thread_pool_);
+  GetDefaultSchedulerAccessorInstance().Attach(*thread_pool_);
 
   auto engine_config = util::make_unique<model::EngineConfig>();
   if (!startup_config_->GetAddress().empty()) {
@@ -60,12 +68,21 @@ std::error_code EngineLauncher::Init() {
     engine_config->SetServerPort(startup_config_->GetPort());
   }
 
-  engine_ = util::make_unique<Engine>(std::move(default_thread_pool),
-                                      std::move(engine_config));
+  engine_ = util::make_unique<Engine>(std::move(engine_config));
 
   const auto initiated = engine_->Init();
   return initiated ? std::error_code()
                    : make_error_code(model::GeneralError::StartupFailed);
+}
+
+void EngineLauncher::DeInit() {
+  LOG_AUTO_TRACE();
+
+  GetDefaultIoServiceAccessorInstance().Detach();
+  GetDefaultSchedulerAccessorInstance().Detach();
+
+  engine_.reset();
+  thread_pool_.reset();
 }
 
 std::error_code EngineLauncher::DoRun() {
@@ -92,7 +109,6 @@ std::error_code EngineLauncher::DoRun() {
   LOG_INFO("Waiting for termination request");
   asio_service.run();
 
-  engine_.reset();
   return std::error_code();
 }
 
@@ -110,6 +126,7 @@ std::error_code EngineLauncher::Run() {
   }
 
   const auto error_code = Init();
+  auto scope_guard = util::MakeScopeGuard([&]() { DeInit(); });
   return error_code ? error_code : DoRun();
 }
 

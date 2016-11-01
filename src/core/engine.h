@@ -18,12 +18,9 @@ class IEngineConfig;
 namespace cppecho {
 namespace core {
 
-class ThreadPool;
-
 class Engine : public IEngine {
  public:
-  Engine(std::unique_ptr<ThreadPool> thread_pool_,
-         std::unique_ptr<model::IEngineConfig> engine_config);
+  explicit Engine(std::unique_ptr<model::IEngineConfig> engine_config);
 
   Engine& operator=(const Engine&) = delete;
   Engine(const Engine&) = delete;
@@ -36,8 +33,6 @@ class Engine : public IEngine {
 
  private:
   DECLARE_GET_LOGGER("Core.Engine")
-
-  std::unique_ptr<ThreadPool> thread_pool_;
 
   bool initiated_ = false;
 

@@ -64,7 +64,7 @@ bool cppecho::core::StartupConfig::GetIsShowVersion() const {
   return is_show_version_;
 }
 
-std::string cppecho::core::StartupConfig::GetAddress() const {
+const std::string& cppecho::core::StartupConfig::GetAddress() const {
   return address_;
 }
 
@@ -72,6 +72,6 @@ std::uint32_t cppecho::core::StartupConfig::GetPort() const {
   return port_;
 }
 
-std::string cppecho::core::StartupConfig::GetHelp() const {
+const std::string& cppecho::core::StartupConfig::GetHelp() const {
   return help_;
 }

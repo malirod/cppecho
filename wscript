@@ -75,6 +75,13 @@ def configure(ctx):
             ctx.fatal('Failed to init log4cplus')
         if not os.path.isdir(log4cplus_build_dir_cxx):
             with working_directory(log4cplus_home):
+                # patch script which fails sometime on CI
+                run_cmd(ctx,
+                        r'sed -i "s/touch configure/touch configure && sync/"'
+                        ' ./scripts/fix-timestamps.sh')
+                run_cmd(ctx,
+                        r'sed -i "s/touch tests\/testsuite/touch tests\/testsuite && sync/" '
+                        './scripts/fix-timestamps.sh')
                 run_cmd(ctx, './scripts/fix-timestamps.sh')
                 run_cmd(ctx, './configure CXX="{}" --disable-shared'
                              ' --enable-static --prefix=$PWD/{}'.format(ctx.env.CXX[0],

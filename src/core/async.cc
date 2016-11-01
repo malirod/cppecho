@@ -1,7 +1,6 @@
 // Copyright [2016] <Malinovsky Rodion>
 
 #include "core/async.h"
-#include <cassert>
 
 using cppecho::core::AsyncOpState;
 
@@ -34,14 +33,4 @@ cppecho::core::StateGuard::StateGuard() {
 
 cppecho::core::StateGuard::~StateGuard() {
   // enableEvents();
-}
-
-cppecho::core::IoServiceAccessor&
-cppecho::core::GetDefaultIoServiceAccessorInstance() {
-  return cppecho::util::single<IoServiceAccessor>();
-}
-
-cppecho::core::IoSchedulerAccessor&
-cppecho::core::GetDefaultSchedulerAccessorInstance() {
-  return cppecho::util::single<IoSchedulerAccessor>();
 }

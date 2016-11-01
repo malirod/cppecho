@@ -4,9 +4,6 @@
 
 #include "core/alias.h"
 #include "core/async_op_state.h"
-#include "core/iioservice.h"
-#include "core/ischeduler.h"
-#include "util/singleton.h"
 
 namespace cppecho {
 namespace core {
@@ -22,12 +19,6 @@ class StateGuard {
   StateGuard();
   ~StateGuard();
 };
-
-using IoServiceAccessor = cppecho::util::SingleAccessor<IIoService>;
-IoServiceAccessor& GetDefaultIoServiceAccessorInstance();
-
-using IoSchedulerAccessor = cppecho::util::SingleAccessor<IScheduler>;
-IoSchedulerAccessor& GetDefaultSchedulerAccessorInstance();
 
 }  // namespace core
 }  // namespace cppecho

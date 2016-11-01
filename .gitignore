@@ -37,3 +37,5 @@ build/*
 
 /logger.cfg
 /debug.log
+
+tags

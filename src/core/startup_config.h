@@ -15,11 +15,11 @@ class StartupConfig {
 
   bool GetIsShowVersion() const;
 
-  std::string GetAddress() const;
+  const std::string& GetAddress() const;
 
   std::uint32_t GetPort() const;
 
-  std::string GetHelp() const;
+  const std::string& GetHelp() const;
 
  private:
   bool is_show_help_ = false;

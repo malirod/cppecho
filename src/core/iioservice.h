@@ -2,16 +2,16 @@
 
 #pragma once
 
+#include "core/alias.h"
+
 namespace cppecho {
 namespace core {
 
-class IEngine {
+class IIoService {
  public:
-  virtual ~IEngine() = default;
+  virtual ~IIoService() = default;
 
-  virtual bool Launch() = 0;
-
-  virtual bool Init() = 0;
+  virtual AsioServiceType& GetAsioService() = 0;
 };
 
 }  // namespace core

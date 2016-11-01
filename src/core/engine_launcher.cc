@@ -1,10 +1,13 @@
 // Copyright [2016] <Malinovsky Rodion>
 
-#include <iostream>
-
 #include "core/engine.h"
+#include <iostream>
+#include "boost/asio/signal_set.hpp"
+#include "core/async.h"
 #include "core/startup_config.h"
+#include "core/thread_pool.h"
 #include "core/version.h"
+#include "model/engine_config.h"
 #include "model/general_error.h"
 #include "util/logger.h"
 #include "util/smartptr_util.h"
@@ -25,14 +28,14 @@ class EngineLauncher {
   EngineLauncher& operator=(const EngineLauncher&) = delete;
   EngineLauncher& operator=(const EngineLauncher&&) = delete;
 
-  std::error_code launch();
+  std::error_code Run();
 
  private:
   DECLARE_GET_LOGGER("Core.EngineLauncher")
 
   std::error_code Init();
 
-  std::error_code DoLaunch();
+  std::error_code DoRun();
 
   std::unique_ptr<StartupConfig> startup_config_;
 
@@ -44,27 +47,56 @@ EngineLauncher::EngineLauncher(std::unique_ptr<StartupConfig> startup_config)
 
 std::error_code EngineLauncher::Init() {
   LOG_AUTO_TRACE();
-  engine_ = util::make_unique<Engine>(startup_config_->GetAddress(),
-                                      startup_config_->GetPort());
-  return std::error_code();
+
+  const int default_thread_pool_size = std::thread::hardware_concurrency();
+  auto default_thread_pool =
+      util::make_unique<ThreadPool>(default_thread_pool_size, "main");
+
+  auto engine_config = util::make_unique<model::EngineConfig>();
+  if (!startup_config_->GetAddress().empty()) {
+    engine_config->SetServerAddress(startup_config_->GetAddress());
+  }
+  if (startup_config_->GetPort() != 0) {
+    engine_config->SetServerPort(startup_config_->GetPort());
+  }
+
+  engine_ = util::make_unique<Engine>(std::move(default_thread_pool),
+                                      std::move(engine_config));
+
+  const auto initiated = engine_->Init();
+  return initiated ? std::error_code()
+                   : make_error_code(model::GeneralError::StartupFailed);
 }
 
-std::error_code EngineLauncher::DoLaunch() {
+std::error_code EngineLauncher::DoRun() {
   LOG_AUTO_TRACE();
-  if (!engine_->Start()) {
+  if (!engine_->Launch()) {
     LOG_ERROR("Failed to start Engine");
     return make_error_code(model::GeneralError::StartupFailed);
   }
+  auto& asio_service =
+      GetDefaultIoServiceAccessorInstance().GetRef().GetAsioService();
+
+  boost::asio::signal_set signals(asio_service, SIGINT, SIGTERM);
+  signals.async_wait([&asio_service, this](
+      const boost::system::error_code& error, int signal_number) {
+    if (!error) {
+      LOG_INFO("Termination request received: " << signal_number
+                                                << ". Stopping");
+      asio_service.stop();
+    } else {
+      LOG_ERROR("Error in signals handler: " << error.message());
+    }
+  });
 
   LOG_INFO("Waiting for termination request");
-
-  LOG_INFO("Termination request received");
+  asio_service.run();
 
   engine_.reset();
   return std::error_code();
 }
 
-std::error_code EngineLauncher::launch() {
+std::error_code EngineLauncher::Run() {
   LOG_AUTO_TRACE();
 
   if (startup_config_->GetIsShowHelp()) {
@@ -78,7 +110,7 @@ std::error_code EngineLauncher::launch() {
   }
 
   const auto error_code = Init();
-  return error_code ? error_code : DoLaunch();
+  return error_code ? error_code : DoRun();
 }
 
 }  // namespace core
@@ -109,7 +141,7 @@ int main(int argc, char** argv) {
     }
     EngineLauncher engine_launcher(std::move(startup_config));
 
-    const auto error_code = engine_launcher.launch();
+    const auto error_code = engine_launcher.Run();
     LOG_INFO("Cppecho has finished with exit code '" << error_code.message()
                                                      << "'");
     return error_code.value();

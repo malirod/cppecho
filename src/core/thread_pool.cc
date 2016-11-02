@@ -2,6 +2,7 @@
 
 #include "core/thread_pool.h"
 #include <utility>
+#include "boost/thread/barrier.hpp"
 #include "util/logger.h"
 #include "util/smartptr_util.h"
 #include "util/thread_util.h"
@@ -15,9 +16,11 @@ cppecho::core::ThreadPool::ThreadPool(const std::size_t thread_count,
     , work_(util::make_unique<AsioServiceWorkType>(asio_service_)) {
   LOG_AUTO_TRACE();
   threads_.reserve(thread_count);
+  boost::barrier barrier(thread_count + 1u);
   for (std::size_t i = 0u; i < thread_count; ++i) {
     threads_.emplace_back(util::ThreadUtil::CreateThread(
-        [this] {
+        [this, &barrier] {
+          barrier.wait();
           while (true) {
             asio_service_.run();
             std::unique_lock<std::mutex> lock(mutex_);
@@ -33,6 +36,7 @@ cppecho::core::ThreadPool::ThreadPool(const std::size_t thread_count,
         },
         name_));
   }
+  barrier.wait();
   LOG_DEBUG(name_ << ": Thread pool created with threads: " << thread_count);
 }
 

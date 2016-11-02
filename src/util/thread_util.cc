@@ -18,7 +18,7 @@ void cppecho::util::ThreadUtil::SetCurrentThreadName(const char* name) {
 }
 
 void cppecho::util::ThreadUtil::SetCurrentThreadNumber(int number) {
-  tls_thread_in_pool_number = number + 1;
+  tls_thread_in_pool_number = number;
 }
 
 const char* cppecho::util::ThreadUtil::GetCurrentThreadName() {
@@ -36,9 +36,4 @@ void cppecho::util::SleepFor(int ms) {
 std::string cppecho::util::ThreadUtil::GetCurrentThreadId() {
   return str(boost::format("[@%1%:%2%]") % GetCurrentThreadName() %
              GetCurrentThreadNumber());
-}
-
-int cppecho::util::ThreadUtil::GenNewThreadNumber() {
-  static std::atomic_int number{1};
-  return ++number;
 }

@@ -20,9 +20,11 @@ script:
   - docker run travis-build /bin/bash -c "./waf configure build_all"
   - docker commit $(docker ps -l -q) travis-build
   - docker run travis-build build/debug/testrunner
+  - docker run travis-build build/release/testrunner
   # GCC, build debug and release and run tests for debug
   - docker run travis-build /bin/bash -c "./waf clean_all"
   - docker commit $(docker ps -l -q) travis-build
   - docker run travis-build /bin/bash -c "CXX=g++ ./waf configure build_all"
   - docker commit $(docker ps -l -q) travis-build
   - docker run travis-build build/debug/testrunner
+  - docker run travis-build build/release/testrunner

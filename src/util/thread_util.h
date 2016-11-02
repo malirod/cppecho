@@ -34,12 +34,25 @@ class ThreadUtil {
 
 void SleepFor(int ms);
 
+template <typename T>
+struct AtomicWithInit : std::atomic<T> {
+  explicit AtomicWithInit(int initial_value = 0)
+      : std::atomic<T>(initial_value) {}
+};
+
+class DefaultThreadCounterTag;
+
+template <typename Tag>
+std::atomic<int>& GetAtomicInstance() {
+  return single<AtomicWithInit<int>, Tag>();
+}
+
 template <typename Action>
 std::thread ThreadUtil::CreateThread(Action action, const char* name) {
   LOG_AUTO_TRACE();
   return std::thread([action, name] {
     SetCurrentThreadName(name);
-    SetCurrentThreadNumber(GenNewThreadNumber());
+    SetCurrentThreadNumber(++GetAtomicInstance<DefaultThreadCounterTag>());
     LOG_TRACE("Created thread " << GetCurrentThreadId());
     try {
       action();

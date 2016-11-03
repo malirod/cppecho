@@ -7,6 +7,7 @@
 #include <mutex>
 #include <thread>
 #include <vector>
+#include "boost/thread/barrier.hpp"
 #include "core/alias.h"
 #include "core/iioservice.h"
 #include "core/ischeduler.h"
@@ -45,6 +46,8 @@ class ThreadPool : public IScheduler, public IIoService {
   std::condition_variable awaiter_;
 
   bool stopped_ = false;
+
+  boost::barrier barrier_;
 };
 
 }  // namespace core

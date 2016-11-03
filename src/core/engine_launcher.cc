@@ -78,10 +78,11 @@ std::error_code EngineLauncher::Init() {
 void EngineLauncher::DeInit() {
   LOG_AUTO_TRACE();
 
+  engine_.reset();
+
   GetDefaultIoServiceAccessorInstance().Detach();
   GetDefaultSchedulerAccessorInstance().Detach();
 
-  engine_.reset();
   thread_pool_.reset();
 }
 

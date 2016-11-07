@@ -88,8 +88,8 @@ Use the following option for configuration `--sanitize`. Applicable to debug bui
 Example
 
 ```
-./waf configure --logger=log4cplus --sanitize=asan
-./waf build_debug -v
+./waf configure --sanitize=asan
+./waf build_debug
 ASAN_OPTIONS="detect_leaks=1" ./build/debug/testrunner
 ```
 

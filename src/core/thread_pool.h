@@ -28,7 +28,7 @@ class ThreadPool : public IScheduler, public IIoService {
 
   void Wait();
 
-  const char* Name() const override;
+  const char* GetName() const override;
 
  private:
   AsioServiceType& GetAsioService() override;

@@ -10,14 +10,28 @@ namespace core {
 
 class IScheduler;
 
-AsyncOpState GoAsync(HandlerType handler, IScheduler& scheduler);
-AsyncOpState GoAsync(HandlerType handler);
-void GoAsyncN(std::int32_t n, HandlerType handler);
+AsyncOpState RunAsync(HandlerType handler, IScheduler& scheduler);
 
-class StateGuard {
+AsyncOpState RunAsync(HandlerType handler);
+
+void RunAsyncTimes(std::int32_t n, HandlerType handler);
+
+void SwitchTo(IScheduler& scheduler);
+
+int GetCurrentThreadContextSwitcherIndex();
+
+void HandleEvents();
+
+void DisableEvents();
+
+void EnableEvents();
+
+void WaitAll();
+
+class AsyncOpStateGuard {
  public:
-  StateGuard();
-  ~StateGuard();
+  AsyncOpStateGuard();
+  ~AsyncOpStateGuard();
 };
 
 }  // namespace core

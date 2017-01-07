@@ -63,7 +63,7 @@ def configure(ctx):
     def setup_submodules(ctx):
         #Setup log4cplus
         log4cplus_home = os.path.join(ctx.path.abspath(), 'thirdparty', 'log4cplus')
-        if not os.path.isdir(log4cplus_home):
+        if not os.path.isdir(log4cplus_home) or not os.listdir(log4cplus_home):
             print('log4cplus submodule is not found. Running'
                   ' `git submodule update --init --recursive`')
             run_cmd(ctx, 'git submodule update --init --recursive')

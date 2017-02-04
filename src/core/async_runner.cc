@@ -139,6 +139,7 @@ cppecho::core::AsyncOpState cppecho::core::AsyncRunner::Start(
 void cppecho::core::AsyncRunner::Schedule(HandlerType handler) {
   LOG_AUTO_TRACE();
   assert(scheduler_ != nullptr && "Scheduler must be set in AsyncRunner");
+  LOG_TRACE("Scheduling handler on [" << scheduler_->GetName() << "]");
   scheduler_->Schedule(std::move(handler));
 }
 

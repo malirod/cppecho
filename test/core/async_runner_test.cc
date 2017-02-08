@@ -33,35 +33,37 @@ TEST(TestAsyncRunner, RunAsyncOnce) {
   GetDefaultSchedulerAccessorInstance().Attach(thread_pool_main);
   const auto main_thread_name = thread_pool_main.GetName();
 
+  int counter = 0;
+
   RunAsync([&]() {
     ASSERT_EQ(main_thread_name, ThreadUtil::GetCurrentThreadName());
+    ++counter;
   });
+  ASSERT_EQ(0, counter);
 
   WaitAll();
+  ASSERT_EQ(1, counter);
 }
 
 TEST(TestAsyncRunner, RunAsyncAndSwitch) {
-  LOG_INFO("!!! Test ----- Init");
-
-  // setup
   ThreadPool thread_pool_main{1u, "main"};
-  const auto main_thread_name = thread_pool_main.GetName();
   ThreadPool thread_pool_net{1u, "net"};
   GetDefaultSchedulerAccessorInstance().Attach(thread_pool_main);
+  const auto main_thread_name = thread_pool_main.GetName();
+  const auto net_thread_name = thread_pool_net.GetName();
 
-  LOG_INFO("!!! ----- Test Start");
+  int counter = 0;
   RunAsync([&]() {
-    LOG_INFO("!!! 1.1 Enter: " << ThreadUtil::GetCurrentThreadId());
     ASSERT_EQ(main_thread_name, ThreadUtil::GetCurrentThreadName());
+    ++counter;
 
-    LOG_INFO("!!! Switching to thread_pool_net");
     SwitchTo(thread_pool_net);
-    LOG_INFO("Switched to thread_pool_net");
 
-    LOG_INFO("!!! 1.1 Leave: " << ThreadUtil::GetCurrentThreadId());
+    ASSERT_EQ(net_thread_name, ThreadUtil::GetCurrentThreadName());
+    ++counter;
   });
 
-  LOG_INFO("!!! Waiting ----- all");
+  ASSERT_EQ(0, counter);
   WaitAll();
-  LOG_INFO("!!! Test ----- End");
+  ASSERT_EQ(2, counter);
 }

@@ -2,7 +2,6 @@
 
 #include "core/coro_helper.h"
 #include <utility>
-// #include "util/smartptr_util.h"
 
 namespace {
 
@@ -38,14 +37,12 @@ void cppecho::core::CoroHelper::Start(HandlerType handler) {
   LOG_AUTO_TRACE();
   handler_ = std::move(handler);
   ptr_yield_ = nullptr;
-  // LOG_INFO("!!!! 1 ptr_yield_="<<ptr_yield_);
   // auto new_coro = MakeCoro();
   // auto new_coro =
   // coro_ = MakeCoro();
   // coro_.reset();
   coro_ = MakeCoro();
   // swap(coro_, new_coro);
-  // LOG_INFO("!!!! 2 ptr_yield_="<<ptr_yield_);
 }
 
 void cppecho::core::CoroHelper::Yield() {
@@ -73,8 +70,6 @@ cppecho::core::CoroHelper::MakeCoro() {
   return CoroType::pull_type{[this](CoroType::push_type& yield) {
     // return util::make_unique<CoroType::pull_type>([this](CoroType::push_type&
     // yield) {
-    LOG_INFO("!!!! 3 ptr_yield_=" << &yield);
-
     ptr_yield_ = &yield;
     Guard guard(*this);
     if (handler_) {
@@ -86,10 +81,14 @@ cppecho::core::CoroHelper::MakeCoro() {
 
 cppecho::core::CoroHelper::Guard::Guard(CoroHelper& ptr_coro_helper)
     : ptr_co_helper_(&ptr_coro_helper) {
+  LOG_AUTO_TRACE();
   thrd_ptr_coro_helper = ptr_co_helper_;
 }
 
 cppecho::core::CoroHelper::Guard::~Guard() {
+  LOG_AUTO_TRACE();
+  if (!thrd_ptr_coro_helper)
+    return;
   thrd_ptr_coro_helper->ptr_yield_ = nullptr;
   thrd_ptr_coro_helper = nullptr;
 }

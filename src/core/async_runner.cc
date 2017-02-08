@@ -21,11 +21,13 @@ cppecho::core::AsyncRunner::AsyncRunner(IScheduler& scheduler)
     , /*defer_handler_(),*/ coro_helper_()
     , index_(++util::GetAtomicInstance<CtorCountTag>()) {
   LOG_AUTO_TRACE();
+  LOG_TRACE("CtorCountTag=" << util::GetAtomicInstance<CtorCountTag>());
 }
 
 cppecho::core::AsyncRunner::~AsyncRunner() {
   LOG_AUTO_TRACE();
   ++util::GetAtomicInstance<DtorCountTag>();
+  LOG_TRACE("DtorCountTag=" << util::GetAtomicInstance<CtorCountTag>());
 }
 
 void cppecho::core::AsyncRunner::Proceed() {
@@ -42,7 +44,9 @@ void cppecho::core::AsyncRunner::Defer(HandlerType handler) {
   LOG_AUTO_TRACE();
   HandleEvents();
   defer_handler_ = std::move(handler);
+  LOG_TRACE("Yielding coroutine");
   Yield();
+  LOG_TRACE("Resumed from Yield in coroutine");
   // yield core
   // coro_();
   // coro_helper_ = CoroHelper(std::move(handler));
@@ -72,6 +76,7 @@ void cppecho::core::AsyncRunner::SwitchTo(IScheduler& dst) {
 void cppecho::core::AsyncRunner::HandleEvents() {
   LOG_AUTO_TRACE();
   if (!is_events_allowed_ || std::uncaught_exception()) {
+    LOG_TRACE("Events are not allowed or caught exception");
     return;
   }
   auto op_status = op_state_.Reset();
@@ -106,6 +111,9 @@ cppecho::core::AsyncOpState cppecho::core::AsyncRunner::GetOpState() const {
 cppecho::core::AsyncOpState cppecho::core::AsyncRunner::Create(
     HandlerType handler, IScheduler& scheduler) {
   LOG_AUTO_TRACE();
+  // This is not a leak. Start will schedule handler and create
+  // Guard for AsyncRunner's this.
+  // Thus AsyncRunner will be deleted in OnExit
   return (new AsyncRunner(scheduler))->Start(std::move(handler));
 }
 
@@ -145,6 +153,7 @@ void cppecho::core::AsyncRunner::Schedule(HandlerType handler) {
 
 cppecho::core::AsyncRunner::Guard cppecho::core::AsyncRunner::MakeGuard() {
   LOG_AUTO_TRACE();
+  LOG_TRACE("Making guard for this of AsyncRunner");
   return Guard(*this);
 }
 
@@ -156,22 +165,23 @@ void cppecho::core::AsyncRunner::ProceedInternal() {
 void cppecho::core::AsyncRunner::OnEnter() {
   LOG_AUTO_TRACE();
   assert(thrd_ptr_async_runner == nullptr);
-  LOG_INFO("!!! setting ptr");
   thrd_ptr_async_runner = this;
-  LOG_INFO("!!! thrd_ptr_async_runner: " << thrd_ptr_async_runner);
 }
 
 void cppecho::core::AsyncRunner::OnExit() noexcept {
   LOG_AUTO_TRACE();
   assert(thrd_ptr_async_runner != nullptr);
   if (defer_handler_) {
+    LOG_TRACE("Processing defer_handler");
     HandlerType handler = std::move(defer_handler_);
     defer_handler_ = nullptr;
     handler();
+  } else {
+    LOG_TRACE("Deleting this");
+    delete this;
   }
   // coro_helper_.Resume();
   thrd_ptr_async_runner = nullptr;
-  delete this;
   /*
   if (defer_handler_ == nullptr) {
       delete this;
@@ -186,7 +196,6 @@ void cppecho::core::AsyncRunner::OnExit() noexcept {
 DECLARE_GLOBAL_GET_LOGGER("Core.AsyncRunner")
 
 cppecho::core::AsyncRunner& cppecho::core::GetCurrentThreadAsyncRunner() {
-  LOG_INFO("!!! thrd_ptr_async_runner: " << thrd_ptr_async_runner);
   assert(thrd_ptr_async_runner != nullptr &&
          "AsyncRunner is not assigned to current thread");
   return *thrd_ptr_async_runner;

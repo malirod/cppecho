@@ -8,6 +8,8 @@
 #include "util/logger.h"
 #include "util/thread_util.h"
 
+#include "boost/thread/barrier.hpp"
+
 using cppecho::core::ThreadPool;
 using cppecho::core::AsyncRunner;
 using cppecho::core::AsyncOpStatus;
@@ -29,17 +31,19 @@ auto GetAsioService(cppecho::core::IIoService& io_service)
 
 TEST(TestAsyncRunner, RunAsyncOnce) {
   ThreadPool thread_pool_main{1u, "main"};
-  ThreadPool thread_pool_net{1u, "net"};
   GetDefaultSchedulerAccessorInstance().Attach(thread_pool_main);
   const auto main_thread_name = thread_pool_main.GetName();
 
-  int counter = 0;
+  std::atomic<int> counter{0};
+  boost::barrier barrier{2};
 
   RunAsync([&]() {
     ASSERT_EQ(main_thread_name, ThreadUtil::GetCurrentThreadName());
+    barrier.wait();
     ++counter;
   });
   ASSERT_EQ(0, counter);
+  barrier.wait();
 
   WaitAll();
   ASSERT_EQ(1, counter);
@@ -52,9 +56,11 @@ TEST(TestAsyncRunner, RunAsyncAndSwitch) {
   const auto main_thread_name = thread_pool_main.GetName();
   const auto net_thread_name = thread_pool_net.GetName();
 
-  int counter = 0;
+  std::atomic<int> counter{0};
+  boost::barrier barrier{2};
   RunAsync([&]() {
     ASSERT_EQ(main_thread_name, ThreadUtil::GetCurrentThreadName());
+    barrier.wait();
     ++counter;
 
     SwitchTo(thread_pool_net);
@@ -64,6 +70,7 @@ TEST(TestAsyncRunner, RunAsyncAndSwitch) {
   });
 
   ASSERT_EQ(0, counter);
+  barrier.wait();
   WaitAll();
   ASSERT_EQ(2, counter);
 }

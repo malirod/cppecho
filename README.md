@@ -32,7 +32,8 @@ Go the unzipped directory and run commands
 
 ```
 ./bootstrap.sh --prefix=./build
-./b2 --with=all -j2 install
+./b2 --toolset=clang cxxflags="-std=c++11" variant=release link=static threading=multi -j$(nproc) install
+
 ```
 
 ####Set environment variable

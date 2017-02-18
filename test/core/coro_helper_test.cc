@@ -27,7 +27,7 @@ TEST(TestCoroHelper, PassHandleViaCtor) {
   ASSERT_EQ(2, value);
 }
 
-TEST(TestCoroHelper, PassHandleViaDefaultCtorAndStart) {
+TEST(TestCoroHelper, PassHandleViaStart) {
   int value = 0;
 
   CoroHelper coro_helper;

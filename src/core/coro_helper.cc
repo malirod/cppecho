@@ -20,61 +20,37 @@ bool cppecho::core::IsInsideCoroutine() {
 }
 
 cppecho::core::CoroHelper::CoroHelper()
-    : handler_()
-    , ptr_yield_(nullptr)
-    // , coro_()
-    , coro_(MakeCoro()) {
-  LOG_AUTO_TRACE();
-}
+    : handler_(), ptr_yield_(nullptr), coro_(MakeCoro()) {}
 
 cppecho::core::CoroHelper::CoroHelper(HandlerType handler)
-    : handler_(std::move(handler)), ptr_yield_(nullptr), coro_(MakeCoro()) {
-  LOG_AUTO_TRACE();
-}
+    : handler_(std::move(handler)), ptr_yield_(nullptr), coro_(MakeCoro()) {}
 
 void cppecho::core::CoroHelper::Start(HandlerType handler) {
-  // using std::swap;
-  LOG_AUTO_TRACE();
   handler_ = std::move(handler);
   ptr_yield_ = nullptr;
-  // auto new_coro = MakeCoro();
-  // auto new_coro =
-  // coro_ = MakeCoro();
-  // coro_.reset();
   coro_ = MakeCoro();
-  // swap(coro_, new_coro);
 }
 
 void cppecho::core::CoroHelper::Yield() {
-  LOG_AUTO_TRACE();
   if (ptr_yield_) {
     (*ptr_yield_)();
   }
 }
 
 void cppecho::core::CoroHelper::Resume() {
-  LOG_AUTO_TRACE();
-  // if (coro_ && *coro_) {
   if (coro_) {
     coro_();
-    // (*coro_)();
   }
 }
 
 cppecho::core::CoroHelper::CoroType::pull_type
 cppecho::core::CoroHelper::MakeCoro() {
-  // std::unique_ptr<cppecho::core::CoroHelper::CoroType::pull_type>
-  // cppecho::core::CoroHelper::MakeCoro() {
-
   // CTor fires coro
   return CoroType::pull_type{[this](CoroType::push_type& yield) {
-    // return util::make_unique<CoroType::pull_type>([this](CoroType::push_type&
-    // yield) {
     ptr_yield_ = &yield;
     Guard guard(*this);
     if (handler_) {
       handler_();
-      // }});
     }
   }};
 }

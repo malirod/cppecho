@@ -69,7 +69,7 @@ patch="/tmp/$prefix-$suffix.patch"
 # clean up any older clang-format patches
 $DELETE_OLD_PATCHES && rm -f /tmp/$prefix*.patch
 
-CPP_FILES=$(git diff $COMMITS_RANGE --name-only --diff-filter=ACM -- . $GIT_DIFF_IGNORE_LIST | grep -e "\.cc$" -e "\.cpp$" -e "\.c$" -e "\.h$" -e "\.hpp$")
+CPP_FILES=$(find src test -type f \( -iname "*.h" -o -iname "*.cc" -o -iname "*.cpp" -o -iname "*.c" -o -iname "*.hpp" \))
 
 # create one patch containing all changes to the files
 # git diff-index --cached --diff-filter=ACMR --name-only $against -- | while read file;

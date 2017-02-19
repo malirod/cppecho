@@ -13,7 +13,7 @@ cppecho::util::enum_util::EnumStrings<AsyncOpStatus>::DataType
 
 cppecho::core::AsyncOpStatusException::AsyncOpStatusException(
     AsyncOpStatus status)
-    : std::runtime_error("Journey event received: " +
+    : std::runtime_error("Event received: " +
                          util::enum_util::EnumToString(status))
     , status_(status) {}
 

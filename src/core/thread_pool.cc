@@ -46,11 +46,11 @@ cppecho::core::ThreadPool::~ThreadPool() {
     stopped_ = true;
     work_.reset();
   }
-  LOG_DEBUG(Name() << ": Stopping thread pool");
+  LOG_DEBUG(GetName() << ": Stopping thread pool");
   for (auto&& item : threads_) {
     item.join();
   }
-  LOG_DEBUG(Name() << ": Thread pool stopped");
+  LOG_DEBUG(GetName() << ": Thread pool stopped");
 }
 
 void cppecho::core::ThreadPool::Schedule(HandlerType handler) {
@@ -64,14 +64,14 @@ void cppecho::core::ThreadPool::Wait() {
   work_.reset();
   while (true) {
     awaiter_.wait(lock);
-    LOG_DEBUG(Name() << ": Wait completed: " << (work_ != nullptr));
+    LOG_DEBUG(GetName() << ": Wait completed: " << (work_ != nullptr));
     if (work_) {
       break;
     }
   }
 }
 
-const char* cppecho::core::ThreadPool::Name() const {
+const char* cppecho::core::ThreadPool::GetName() const {
   return name_;
 }
 

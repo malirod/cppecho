@@ -32,7 +32,8 @@ Go the unzipped directory and run commands
 
 ```
 ./bootstrap.sh --prefix=./build
-./b2 --with=all -j2 install
+./b2 --toolset=clang cxxflags="-std=c++11" variant=release link=static threading=multi -j$(nproc) install
+
 ```
 
 ####Set environment variable
@@ -88,8 +89,8 @@ Use the following option for configuration `--sanitize`. Applicable to debug bui
 Example
 
 ```
-./waf configure --logger=log4cplus --sanitize=asan
-./waf build_debug -v
+./waf configure --sanitize=asan
+./waf build_debug
 ASAN_OPTIONS="detect_leaks=1" ./build/debug/testrunner
 ```
 

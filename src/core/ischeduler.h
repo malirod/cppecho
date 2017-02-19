@@ -13,10 +13,10 @@ class IScheduler {
 
   virtual void Schedule(HandlerType handler) = 0;
 
-  virtual const char* Name() const;
+  virtual const char* GetName() const;
 };
 
-inline const char* IScheduler::Name() const {
+inline const char* IScheduler::GetName() const {
   return "<unknown>";
 }
 

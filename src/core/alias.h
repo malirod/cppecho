@@ -11,6 +11,7 @@ using AsioServiceType = boost::asio::io_service;
 using AsioServiceWorkType = boost::asio::io_service::work;
 
 using HandlerType = std::function<void()>;
+using ProceedHandlerType = std::function<void(HandlerType)>;
 
 }  // namespace core
 }  // namespace cppecho

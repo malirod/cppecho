@@ -21,12 +21,12 @@ Use appropriate branch. Branch name containts info about used env and options to
 
 E.g.
 
-https://github.com/malirod/boost-bin/tree/boost-1.61-ubuntu-16.04-x64-clang-5.8-release-c++11-static-multi
+https://github.com/malirod/boost-bin/tree/boost-1.62-ubuntu-16.04-x64-clang-5.8-release-c++11-static-multi
 
 ####Build Boost manually from sources
 If pre-build version doesn't fit your needs (OS, compiler etc) then build Boost manually.
 
-Download and unzip to some dir (e.g. `~/libs/boost_1_61_0`) latest stable version from [Boost site](http://www.boost.org/).
+Download and unzip to some dir (e.g. `~/libs/boost_1_62_0`) latest stable version from [Boost site](http://www.boost.org/).
 
 Go the unzipped directory and run commands
 
@@ -39,7 +39,7 @@ Go the unzipped directory and run commands
 ####Set environment variable
 Set env pointing to the boost install dir (in ~/.profile or ~/.bashrc)
 
-`export BOOST_HOME=~/libs/boost_1_61_0/build`
+`export BOOST_HOME=~/libs/boost_1_62_0/build`
 
 Restart terminal, or reload config with `source ~/.profile` (`source ~/.bashrc`)
 
@@ -53,13 +53,17 @@ This will allow to perform some code checks locally before posting changes to se
 
 `sudo apt-get install pylint`
 
+##Logger
+
+Project uses log4cplus logger. It's configured as the sub-module located in `thirdparty\log4cplus`. If this directory doens't exist then `waf configure` will do reqired preparations.
+
 ##Build
 
 ####Build commands
-- `build` - debug build
-- `build_all` - relase and debug build
-- `build_debug` - debug build
-- `build_releas` - release build
+- `build`        : debug build
+- `build_all`    : relase and debug build
+- `build_debug`  : debug build
+- `build_releas` : release build
 
 Sample. In the project root call
 
@@ -79,7 +83,7 @@ Clang is used by defaul. Fallback to GCC if Clang not found. To use GCC call
 
 ###Build with sanitizers (clang)
 
-Use the following option for configuration `--sanitize`. Applicable to debug build only. Known values are:
+Use the following option for configuration `--sanitize-with`. Applicable to debug build only. Known values are:
 
 - `asan`: address
 - `tsan`: thread
@@ -89,8 +93,8 @@ Use the following option for configuration `--sanitize`. Applicable to debug bui
 Example
 
 ```
-./waf configure --sanitize=asan
-./waf build_debug
+./waf configure --sanitize-with=asan
+./waf build
 ASAN_OPTIONS="detect_leaks=1" ./build/debug/testrunner
 ```
 

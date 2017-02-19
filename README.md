@@ -17,7 +17,7 @@ C++11 Standard is used.
 
 Use the following repository: https://github.com/malirod/boost-bin
 
-Use appropriate branch. Branch name containts info about used env and options to build Boost.
+Use appropriate branch. Branch name contains info about used env and options to build Boost.
 
 E.g.
 
@@ -55,15 +55,15 @@ This will allow to perform some code checks locally before posting changes to se
 
 ##Logger
 
-Project uses log4cplus logger. It's configured as the sub-module located in `thirdparty\log4cplus`. If this directory doens't exist then `waf configure` will do reqired preparations.
+Project uses log4cplus logger. It's configured as the sub-module located in `thirdparty\log4cplus`. If this directory doesn't exist then `waf configure` will do required preparations.
 
 ##Build
 
 ####Build commands
-- `build`        : debug build
-- `build_all`    : relase and debug build
-- `build_debug`  : debug build
-- `build_releas` : release build
+- `build`: debug build
+- `build_all`: release and debug build
+- `build_debug`: debug build
+- `build_release`: release build
 
 Sample. In the project root call
 
@@ -77,7 +77,7 @@ Sample
 
 List all available targets with `./waf list`
 
-Clang is used by defaul. Fallback to GCC if Clang not found. To use GCC call
+Clang is used by default. Fallback to GCC if Clang not found. To use GCC call
 
 `CXX=g++ ./waf configure`
 

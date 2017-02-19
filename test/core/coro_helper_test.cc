@@ -7,8 +7,11 @@
 using cppecho::core::CoroHelper;
 using cppecho::core::Yield;
 
+DECLARE_GLOBAL_GET_LOGGER("Core.CoroHelperTest")
+
 TEST(TestCoroHelper, DefaultConstructible) {
   CoroHelper coro_helper;
+  ASSERT_FALSE(coro_helper);
   coro_helper.Yield();
   coro_helper.Resume();
 }
@@ -27,6 +30,40 @@ TEST(TestCoroHelper, PassHandleViaCtor) {
   ASSERT_EQ(2, value);
 }
 
+TEST(TestCoroHelper, PassFinitHandleViaStart) {
+  int value = 0;
+
+  CoroHelper coro_helper;
+  coro_helper.Start([&value]() {
+    value += 5;
+    Yield();
+    value += 3;
+  });
+
+  ASSERT_EQ(5, value);
+  coro_helper.Resume();
+  ASSERT_EQ(8, value);
+}
+
+TEST(TestCoroHelper, ResumeMoreThanYield) {
+  int value = 0;
+
+  CoroHelper coro_helper;
+  coro_helper.Start([&value]() {
+    value += 5;
+    Yield();
+    value += 3;
+  });
+
+  ASSERT_EQ(5, value);
+  coro_helper.Resume();
+  ASSERT_EQ(8, value);
+  ASSERT_FALSE(coro_helper);
+  coro_helper.Resume();
+  coro_helper.Resume();
+  coro_helper.Resume();
+}
+
 TEST(TestCoroHelper, PassHandleViaStart) {
   int value = 0;
 
@@ -37,6 +74,38 @@ TEST(TestCoroHelper, PassHandleViaStart) {
       Yield();
     }
   });
+
+  ASSERT_EQ(5, value);
+  coro_helper.Resume();
+  ASSERT_EQ(10, value);
+}
+
+TEST(TestCoroHelper, DestroyYieldedCoro) {
+  int value = 0;
+
+  {
+    CoroHelper coro_helper;
+    coro_helper.Start([&value]() {
+      while (true) {
+        value += 5;
+        Yield();
+      }
+    });
+  }
+  ASSERT_EQ(5, value);
+}
+
+TEST(TestCoroHelper, PassHandleViaStartTwice) {
+  int value = 0;
+
+  CoroHelper coro_helper;
+  coro_helper.Start([&value]() {
+    while (true) {
+      value += 5;
+      Yield();
+    }
+  });
+
   ASSERT_EQ(5, value);
   coro_helper.Resume();
   ASSERT_EQ(10, value);

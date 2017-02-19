@@ -1,5 +1,6 @@
 // Copyright [2016] <Malinovsky Rodion>
 
+#include <memory>
 #include "boost/coroutine2/all.hpp"
 #include "core/alias.h"
 #include "util/logger.h"
@@ -11,6 +12,8 @@ class CoroHelper {
  public:
   CoroHelper();
 
+  ~CoroHelper();
+
   explicit CoroHelper(HandlerType handler);
 
   void Start(HandlerType handler);
@@ -19,27 +22,21 @@ class CoroHelper {
 
   void Resume();
 
+  explicit operator bool() const;
+
  private:
-  DECLARE_GET_LOGGER("Core.CoHelper")
-
-  class Guard {
-   public:
-    explicit Guard(CoroHelper& ptr_co_helper);
-    ~Guard();
-
-   private:
-    CoroHelper* ptr_co_helper_ = nullptr;
-  };
+  DECLARE_GET_LOGGER("Core.CoroHelper")
 
   using CoroType = boost::coroutines2::coroutine<void>;
+  using CoroPullType = std::unique_ptr<CoroType::pull_type>;
 
-  CoroType::pull_type MakeCoro();
+  CoroPullType MakeCoro();
 
   HandlerType handler_;
 
   CoroType::push_type* ptr_yield_;
 
-  CoroType::pull_type coro_;
+  CoroPullType coro_;
 };
 
 void Yield();

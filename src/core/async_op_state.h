@@ -4,13 +4,14 @@
 
 #include <memory>
 #include <stdexcept>
+#include "util/logger.h"
 
 namespace cppecho {
 namespace core {
 
 enum class AsyncOpStatus { Normal, Cancelled, Timedout };
 
-class AsyncOpStatusException : std::runtime_error {
+class AsyncOpStatusException : public std::runtime_error {
  public:
   explicit AsyncOpStatusException(AsyncOpStatus status);
 
@@ -30,7 +31,11 @@ class AsyncOpState {
 
   bool Timedout();
 
+  AsyncOpStatus GetStatus() const;
+
  private:
+  DECLARE_GET_LOGGER("Core.Async.AsyncOpState")
+
   struct State {
     State() : status(AsyncOpStatus::Normal) {}
     AsyncOpStatus status;

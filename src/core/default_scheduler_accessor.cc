@@ -7,6 +7,11 @@ cppecho::core::GetDefaultIoServiceAccessorInstance() {
   return cppecho::util::single<IoServiceAccessor>();
 }
 
+cppecho::core::TimeoutServiceAccessor&
+cppecho::core::GetTimeoutServiceAccessorInstance() {
+  return cppecho::util::single<TimeoutServiceAccessor>();
+}
+
 cppecho::core::IoSchedulerAccessor&
 cppecho::core::GetDefaultSchedulerAccessorInstance() {
   return cppecho::util::single<IoSchedulerAccessor>();

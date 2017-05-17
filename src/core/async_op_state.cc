@@ -5,6 +5,7 @@
 #include "util/enum_util.h"
 
 using cppecho::core::AsyncOpStatus;
+using cppecho::util::enum_util::EnumToString;
 
 template <>
 cppecho::util::enum_util::EnumStrings<AsyncOpStatus>::DataType
@@ -41,8 +42,12 @@ bool cppecho::core::AsyncOpState::Timedout() {
 bool cppecho::core::AsyncOpState::SetStatus(AsyncOpStatus status) {
   auto& current_status = GetState().status;
   if (current_status != AsyncOpStatus::Normal) {
+    LOG_TRACE("Skipping changing status since alredy not Normal: "
+              << EnumToString(current_status));
     return false;
   }
+  LOG_TRACE("Changing status from " << EnumToString(current_status) << " to "
+                                    << EnumToString(status));
   current_status = status;
   return true;
 }
@@ -50,4 +55,9 @@ bool cppecho::core::AsyncOpState::SetStatus(AsyncOpStatus status) {
 cppecho::core::AsyncOpState::State& cppecho::core::AsyncOpState::GetState() {
   assert(state_ != nullptr && "Internal state is null");
   return *state_;
+}
+
+cppecho::core::AsyncOpStatus cppecho::core::AsyncOpState::GetStatus() const {
+  assert(state_ != nullptr && "Internal state is null");
+  return state_->status;
 }

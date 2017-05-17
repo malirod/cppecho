@@ -25,7 +25,7 @@ class AsyncRunner {
 
   void SwitchTo(IScheduler& dest);
 
-  void HandleEvents();
+  void HandleEvents() const;
 
   void DisableEvents();
 

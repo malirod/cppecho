@@ -30,7 +30,7 @@ class CoroHelper {
   using CoroType = boost::coroutines2::coroutine<void>;
   using CoroPullType = std::unique_ptr<CoroType::pull_type>;
 
-  CoroPullType MakeCoro();
+  CoroPullType MakeCoroAndAutoStart();
 
   HandlerType handler_;
 

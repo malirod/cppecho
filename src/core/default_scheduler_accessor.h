@@ -12,6 +12,11 @@ namespace core {
 using IoServiceAccessor = cppecho::util::SingleAccessor<IIoService>;
 IoServiceAccessor& GetDefaultIoServiceAccessorInstance();
 
+struct TimeoutTag;
+using TimeoutServiceAccessor =
+    cppecho::util::SingleAccessor<IIoService, TimeoutTag>;
+TimeoutServiceAccessor& GetTimeoutServiceAccessorInstance();
+
 using IoSchedulerAccessor = cppecho::util::SingleAccessor<IScheduler>;
 IoSchedulerAccessor& GetDefaultSchedulerAccessorInstance();
 

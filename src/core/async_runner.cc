@@ -3,6 +3,7 @@
 #include "core/async_runner.h"
 #include <thread>
 #include <utility>
+#include "util/enum_util.h"
 #include "util/thread_util.h"
 
 namespace {
@@ -18,7 +19,7 @@ cppecho::core::AsyncRunner::AsyncRunner(IScheduler& scheduler)
     : op_state_()
     , is_events_allowed_(true)
     , scheduler_(&scheduler)
-    , /*defer_handler_(),*/ coro_helper_()
+    , coro_helper_()
     , index_(++util::GetAtomicInstance<CtorCountTag>()) {
   LOG_AUTO_TRACE();
   LOG_TRACE("CtorCountTag=" << util::GetAtomicInstance<CtorCountTag>());
@@ -47,9 +48,6 @@ void cppecho::core::AsyncRunner::Defer(HandlerType handler) {
   LOG_TRACE("Yielding coroutine");
   Yield();
   LOG_TRACE("Resumed from Yield in coroutine");
-  // yield core
-  // coro_();
-  // coro_helper_ = CoroHelper(std::move(handler));
   HandleEvents();
 }
 
@@ -73,25 +71,34 @@ void cppecho::core::AsyncRunner::SwitchTo(IScheduler& dst) {
   Defer(ProceedHandler());
 }
 
-void cppecho::core::AsyncRunner::HandleEvents() {
+void cppecho::core::AsyncRunner::HandleEvents() const {
   LOG_AUTO_TRACE();
-  if (!is_events_allowed_ || std::uncaught_exception()) {
-    LOG_TRACE("Events are not allowed or caught exception");
+  // Can be called from destructor
+  if (!is_events_allowed_) {
+    LOG_TRACE("Skipping events handling: events are not allowed");
     return;
   }
-  auto op_status = op_state_.Reset();
+  if (std::uncaught_exception()) {
+    LOG_TRACE("Skipping events handling: uncaught exception");
+    return;
+  }
+  auto op_status = op_state_.GetStatus();
   if (op_status == AsyncOpStatus::Normal) {
     return;
   }
+  LOG_TRACE("Throwing AsyncOpStatusException: "
+            << util::enum_util::EnumToString(op_status));
   throw AsyncOpStatusException(op_status);
 }
 
 void cppecho::core::AsyncRunner::DisableEvents() {
+  LOG_AUTO_TRACE();
   HandleEvents();
   is_events_allowed_ = false;
 }
 
 void cppecho::core::AsyncRunner::EnableEvents() {
+  LOG_AUTO_TRACE();
   is_events_allowed_ = true;
   HandleEvents();
 }
@@ -175,22 +182,15 @@ void cppecho::core::AsyncRunner::OnExit() noexcept {
     LOG_TRACE("Processing defer_handler");
     HandlerType handler = std::move(defer_handler_);
     defer_handler_ = nullptr;
+    LOG_TRACE("Calling defer handler");
     handler();
+    LOG_TRACE("Exited defer handler");
   } else {
     LOG_TRACE("Deleting this");
     delete this;
   }
-  // coro_helper_.Resume();
+  LOG_TRACE("thrd_ptr_async_runner = nullptr;");
   thrd_ptr_async_runner = nullptr;
-  /*
-  if (defer_handler_ == nullptr) {
-      delete this;
-  } else {
-      HandlerType handler = std::move(defer_handler_);
-      defer_handler_ = nullptr;
-      handler();
-  }
-  */
 }
 
 DECLARE_GLOBAL_GET_LOGGER("Core.AsyncRunner")

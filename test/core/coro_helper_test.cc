@@ -2,6 +2,7 @@
 
 #include "core/coro_helper.h"
 #include <stdexcept>
+#include <thread>
 #include "gtest/gtest.h"
 
 using cppecho::core::CoroHelper;
@@ -28,6 +29,10 @@ TEST(TestCoroHelper, PassHandleViaCtor) {
   ASSERT_EQ(1, value);
   coro_helper.Resume();
   ASSERT_EQ(2, value);
+  coro_helper.Resume();
+  ASSERT_EQ(3, value);
+  coro_helper.Resume();
+  ASSERT_EQ(4, value);
 }
 
 TEST(TestCoroHelper, PassFinitHandleViaStart) {
@@ -174,4 +179,31 @@ TEST(TestCoroHelper, HandleException) {
     is_expception_caught = true;
   }
   ASSERT_TRUE(is_expception_caught);
+}
+
+TEST(TestCoroHelper, SwitchThread) {
+  std::atomic_int value{0};
+
+  CoroHelper coro_helper;
+  coro_helper.Start([&value]() {
+    while (true) {
+      ++value;
+      Yield();
+    }
+  });
+
+  ASSERT_EQ(1, value);
+  coro_helper.Resume();
+  ASSERT_EQ(2, value);
+
+  auto new_trhread = std::thread([&] {
+    coro_helper.Resume();
+    ASSERT_EQ(3, value);
+    coro_helper.Resume();
+    ASSERT_EQ(4, value);
+  });
+  new_trhread.join();
+
+  coro_helper.Resume();
+  ASSERT_EQ(5, value);
 }

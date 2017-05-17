@@ -9,6 +9,7 @@ namespace core {
 
 using AsioServiceType = boost::asio::io_service;
 using AsioServiceWorkType = boost::asio::io_service::work;
+using AsioServiceStrandType = boost::asio::io_service::strand;
 
 using HandlerType = std::function<void()>;
 using ProceedHandlerType = std::function<void(HandlerType)>;

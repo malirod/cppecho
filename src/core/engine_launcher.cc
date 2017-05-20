@@ -5,10 +5,10 @@
 #include <utility>
 #include "core/async.h"
 #include "core/default_scheduler_accessor.h"
+#include "core/engine_config.h"
+#include "core/general_error.h"
 #include "core/startup_config.h"
 #include "core/version.h"
-#include "model/engine_config.h"
-#include "model/general_error.h"
 #include "util/logger.h"
 #include "util/scope_guard.h"
 #include "util/smartptr_util.h"
@@ -26,7 +26,7 @@ std::error_code cppecho::core::EngineLauncher::Init() {
   GetDefaultIoServiceAccessorInstance().Attach(*thread_pool_);
   GetDefaultSchedulerAccessorInstance().Attach(*thread_pool_);
 
-  auto engine_config = util::make_unique<model::EngineConfig>();
+  auto engine_config = util::make_unique<core::EngineConfig>();
   if (!startup_config_->GetAddress().empty()) {
     engine_config->SetServerAddress(startup_config_->GetAddress());
   }
@@ -38,7 +38,7 @@ std::error_code cppecho::core::EngineLauncher::Init() {
 
   const auto initiated = engine_->Init();
   return initiated ? std::error_code()
-                   : make_error_code(model::GeneralError::StartupFailed);
+                   : make_error_code(core::GeneralError::StartupFailed);
 }
 
 void cppecho::core::EngineLauncher::DeInit() {
@@ -56,7 +56,7 @@ std::error_code cppecho::core::EngineLauncher::DoRun() {
   LOG_AUTO_TRACE();
   if (!engine_->Launch()) {
     LOG_ERROR("Failed to start Engine");
-    return make_error_code(model::GeneralError::StartupFailed);
+    return make_error_code(core::GeneralError::StartupFailed);
   }
   auto& asio_service =
       GetDefaultIoServiceAccessorInstance().GetRef().GetAsioService();

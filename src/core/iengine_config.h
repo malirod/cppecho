@@ -3,10 +3,10 @@
 #pragma once
 
 #include <string>
-#include "model/alias.h"
+#include "core/alias.h"
 
 namespace cppecho {
-namespace model {
+namespace core {
 
 class IEngineConfig {
  public:
@@ -21,5 +21,5 @@ class IEngineConfig {
   virtual void SetServerPort(PortType value) = 0;
 };
 
-}  // namespace model
+}  // namespace core
 }  // namespace cppecho

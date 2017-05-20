@@ -8,11 +8,11 @@
 #include "util/logger.h"
 
 namespace cppecho {
-namespace model {
+namespace core {
 
 class IEngineConfig;
 
-}  // namespace model
+}  // namespace core
 }  // namespace cppecho
 
 namespace cppecho {
@@ -20,7 +20,7 @@ namespace core {
 
 class Engine : public IEngine {
  public:
-  explicit Engine(std::unique_ptr<model::IEngineConfig> engine_config);
+  explicit Engine(std::unique_ptr<core::IEngineConfig> engine_config);
 
   Engine& operator=(const Engine&) = delete;
   Engine(const Engine&) = delete;
@@ -36,7 +36,7 @@ class Engine : public IEngine {
 
   bool initiated_ = false;
 
-  std::unique_ptr<model::IEngineConfig> engine_config_;
+  std::unique_ptr<core::IEngineConfig> engine_config_;
 };
 
 }  // namespace core

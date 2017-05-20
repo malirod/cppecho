@@ -4,11 +4,11 @@
 #include <cassert>
 #include <utility>
 #include "core/async.h"
+#include "core/iengine_config.h"
 #include "core/ischeduler.h"
-#include "model/iengine_config.h"
 
 cppecho::core::Engine::Engine(
-    std::unique_ptr<model::IEngineConfig> engine_config)
+    std::unique_ptr<core::IEngineConfig> engine_config)
     : engine_config_(std::move(engine_config)) {
   LOG_AUTO_TRACE();
   assert(engine_config_ != nullptr && "Config is not set");

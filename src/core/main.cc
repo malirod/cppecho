@@ -2,9 +2,9 @@
 
 #include "boost/asio/signal_set.hpp"
 #include "core/engine_launcher.h"
+#include "core/general_error.h"
 #include "core/startup_config.h"
 #include "core/version.h"
-#include "model/general_error.h"
 #include "util/logger.h"
 #include "util/smartptr_util.h"
 
@@ -13,7 +13,7 @@ DECLARE_GLOBAL_GET_LOGGER("Main")
 int main(int argc, char** argv) {
   using cppecho::core::StartupConfig;
   using cppecho::core::EngineLauncher;
-  using cppecho::model::GeneralError;
+  using cppecho::core::GeneralError;
   using cppecho::util::make_unique;
   INIT_LOGGER("logger.cfg");
 

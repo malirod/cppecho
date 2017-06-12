@@ -101,6 +101,19 @@ class Bar {
     LOG_FATAL("Fatal class line");
   }
 
+  static void OutputTestLogLinesFmt() {
+    // cppcheck-suppress unreadVariable
+    const std::size_t index1 = 17;
+    // cppcheck-suppress unreadVariable
+    const std::size_t index2 = 18;
+    LOG_TRACEF("Trace class line. Number #%1%, #%2%", index1, index2);
+    LOG_DEBUGF("Debug class line. Number #%1%, #%2%", index1, index2);
+    LOG_INFOF("Info class line. Number #%1%, #%2%", index1, index2);
+    LOG_WARNF("Warn class line. Number #%1%, #%2%", index1, index2);
+    LOG_ERRORF("Error class line. Number #%1%, #%2%", index1, index2);
+    LOG_FATALF("Fatal class line. Number #%1%, #%2%", index1, index2);
+  }
+
   static void OutputAutoTrace() {
     LOG_AUTO_TRACE();
     LOG_TRACE("Method with auto trace");
@@ -140,6 +153,28 @@ TEST(TestLogger, LogFromFreeFunctionFromAnonymousNamespace) {
     TestContains(log_content, "[Logger.Global][ WARN]:Warn global line");
     TestContains(log_content, "[Logger.Global][ERROR]:Error global line");
     TestContains(log_content, "[Logger.Global][FATAL]:Fatal global line");
+  };
+
+  InitLoggerAndRunTest(action);
+}
+
+TEST(TestLogger, LogFromClassMethodWithFormat) {
+  const auto action = []() {
+    Foo::Bar bar;
+    bar.OutputTestLogLinesFmt();
+    const auto log_content = GetLogOutput();
+    TestContains(log_content,
+                 "[Foo.Bar][TRACE]:Trace class line. Number #17, #18");
+    TestContains(log_content,
+                 "[Foo.Bar][DEBUG]:Debug class line. Number #17, #18");
+    TestContains(log_content,
+                 "[Foo.Bar][ INFO]:Info class line. Number #17, #18");
+    TestContains(log_content,
+                 "[Foo.Bar][ WARN]:Warn class line. Number #17, #18");
+    TestContains(log_content,
+                 "[Foo.Bar][ERROR]:Error class line. Number #17, #18");
+    TestContains(log_content,
+                 "[Foo.Bar][FATAL]:Fatal class line. Number #17, #18");
   };
 
   InitLoggerAndRunTest(action);

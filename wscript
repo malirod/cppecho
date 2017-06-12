@@ -156,7 +156,7 @@ def build(ctx):
     ctx.program(source=ctx.path.ant_glob(['src/**/*.cc',
                                           'test/**/*.cc',
                                           'thirdparty/gtest/*.cc'],
-                                         excl=['src/core/main.cc']),
+                                         excl=['src/core/lifecycle.cc']),
                 target='testrunner',
                 includes=['test'])
 

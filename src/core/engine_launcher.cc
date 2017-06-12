@@ -9,9 +9,13 @@
 #include "core/general_error.h"
 #include "core/startup_config.h"
 #include "core/version.h"
+#include "net/util.h"
 #include "util/logger.h"
 #include "util/scope_guard.h"
 #include "util/smartptr_util.h"
+
+using cppecho::net::GetNetworkServiceAccessorInstance;
+using cppecho::net::GetNetworkSchedulerAccessorInstance;
 
 cppecho::core::EngineLauncher::EngineLauncher(
     std::unique_ptr<StartupConfig> startup_config)
@@ -20,11 +24,17 @@ cppecho::core::EngineLauncher::EngineLauncher(
 std::error_code cppecho::core::EngineLauncher::Init() {
   LOG_AUTO_TRACE();
 
-  const int thread_pool_size = std::thread::hardware_concurrency();
-  thread_pool_ = util::make_unique<ThreadPool>(thread_pool_size, "main");
+  const auto hardware_threads_count = std::thread::hardware_concurrency();
+  const int thread_pool_size =
+      hardware_threads_count >= 2 ? hardware_threads_count : 2;
 
-  GetDefaultIoServiceAccessorInstance().Attach(*thread_pool_);
-  GetDefaultSchedulerAccessorInstance().Attach(*thread_pool_);
+  thread_pool_main_ = util::make_unique<ThreadPool>(thread_pool_size, "main");
+  thread_pool_net_ = util::make_unique<ThreadPool>(thread_pool_size, "net");
+
+  GetDefaultIoServiceAccessorInstance().Attach(*thread_pool_main_);
+  GetDefaultSchedulerAccessorInstance().Attach(*thread_pool_main_);
+  GetNetworkServiceAccessorInstance().Attach(*thread_pool_net_);
+  GetNetworkSchedulerAccessorInstance().Attach(*thread_pool_net_);
 
   auto engine_config = util::make_unique<core::EngineConfig>();
   if (!startup_config_->GetAddress().empty()) {
@@ -46,10 +56,13 @@ void cppecho::core::EngineLauncher::DeInit() {
 
   engine_.reset();
 
+  GetNetworkServiceAccessorInstance().Detach();
   GetDefaultIoServiceAccessorInstance().Detach();
   GetDefaultSchedulerAccessorInstance().Detach();
+  GetNetworkServiceAccessorInstance().Detach();
 
-  thread_pool_.reset();
+  thread_pool_net_.reset();
+  thread_pool_main_.reset();
 }
 
 std::error_code cppecho::core::EngineLauncher::DoRun() {

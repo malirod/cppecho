@@ -9,6 +9,11 @@ cppecho::net::GetNetworkServiceAccessorInstance() {
   return cppecho::util::single<NetworkServiceAccessor>();
 }
 
+cppecho::net::NetworkIoSchedulerAccessor&
+cppecho::net::GetNetworkSchedulerAccessorInstance() {
+  return cppecho::util::single<NetworkIoSchedulerAccessor>();
+}
+
 void cppecho::net::DeferIo(CallbackIoHandlerType callback) {
   ErrorType error;
   cppecho::core::DeferProceed(

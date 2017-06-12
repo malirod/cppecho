@@ -4,8 +4,12 @@
 #include <cassert>
 #include <utility>
 #include "core/async.h"
+#include "core/default_scheduler_accessor.h"
 #include "core/iengine_config.h"
 #include "core/ischeduler.h"
+#include "net/util.h"
+
+using cppecho::net::GetNetworkSchedulerAccessorInstance;
 
 cppecho::core::Engine::Engine(
     std::unique_ptr<core::IEngineConfig> engine_config)
@@ -28,6 +32,15 @@ bool cppecho::core::Engine::Launch() {
            << ":"
            << engine_config_->GetServerPort());
   assert(initiated_);
+
+  RunAsync(
+      [&]() {
+        LOG_INFO("Accepting client connections on "
+                 << engine_config_->GetServerAddress()
+                 << ":"
+                 << engine_config_->GetServerPort());
+      },
+      GetNetworkSchedulerAccessorInstance());
 
   LOG_INFO("Engine has been launched.");
   return true;

@@ -34,7 +34,9 @@ class EngineLauncher {
 
   std::unique_ptr<IEngine> engine_;
 
-  std::unique_ptr<ThreadPool> thread_pool_;
+  std::unique_ptr<ThreadPool> thread_pool_main_;
+
+  std::unique_ptr<ThreadPool> thread_pool_net_;
 };
 
 }  // namespace core

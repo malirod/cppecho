@@ -13,19 +13,24 @@ cppecho::net::Acceptor::Acceptor(int port)
           boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)) {}
 
 cppecho::net::Socket cppecho::net::Acceptor::Accept() {
+  LOG_AUTO_TRACE();
   Socket socket;
   DeferIo([this, &socket](IoHandlerType proceed) {
+    LOG_DEBUG("Calling acceptor_.async_accept");
     acceptor_.async_accept(socket.socket_, proceed);
   });
   return socket;
 }
 
 void cppecho::net::Acceptor::DoAccept(SocketHandlerType handler) {
-  auto holder = cppecho::util::make_unique<Socket>(std::move(Accept()));
-  auto* socket_ptr = holder.get();
-  cppecho::core::RunAsync([socket_ptr, handler] {
-    std::unique_ptr<Socket> async_holder(socket_ptr);
-    handler(*async_holder);
-  });
-  holder.release();
+  LOG_AUTO_TRACE();
+  // Socket should live after this method will finish due to async call
+  // Async framework requires copyable lambdas thus movig accepted socket
+  // to lambda will not work.
+  auto socket_holder = std::make_shared<Socket>(std::move(Accept()));
+  assert(socket_holder);
+  LOG_DEBUG("Accepted connection");
+
+  cppecho::core::RunAsync(
+      [socket_holder, handler] { handler(*socket_holder); });
 }

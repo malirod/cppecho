@@ -17,6 +17,10 @@ class Socket {
 
   Socket();
 
+  Socket(Socket&&) = default;
+
+  Socket& operator=(Socket&&) = default;
+
   void Read(BufferType&);
 
   void PartialRead(BufferType&);

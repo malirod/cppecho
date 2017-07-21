@@ -57,9 +57,9 @@ void cppecho::core::EngineLauncher::DeInit() {
   engine_.reset();
 
   GetNetworkServiceAccessorInstance().Detach();
+  GetNetworkSchedulerAccessorInstance().Detach();
   GetDefaultIoServiceAccessorInstance().Detach();
   GetDefaultSchedulerAccessorInstance().Detach();
-  GetNetworkServiceAccessorInstance().Detach();
 
   thread_pool_net_.reset();
   thread_pool_main_.reset();

@@ -1,5 +1,6 @@
 // Copyright [2017] <Malinovsky Rodion>
 
+#include <deque>
 #include <memory>
 
 #include "core/async.h"
@@ -28,6 +29,12 @@ using cppecho::net::GetNetworkSchedulerAccessorInstance;
 using cppecho::core::GetDefaultIoServiceAccessorInstance;
 using cppecho::core::GetDefaultSchedulerAccessorInstance;
 
+const int SERVER_PORT = 10123;
+
+const char SERVER_ECHO_PREFIX[] = "echo: ";
+
+const char GREETING[] = "Hello World!!!";
+
 class TestSocket : public ::testing::Test {
  public:
   TestSocket();
@@ -35,10 +42,6 @@ class TestSocket : public ::testing::Test {
   ~TestSocket() override;
 
  protected:
-  constexpr static const int SERVER_PORT = 10123;
-
-  constexpr static const char* const SERVER_ECHO_PREFIX = "echo: ";
-
   void LaunchServer();
 
   void LaunchClient();
@@ -48,6 +51,10 @@ class TestSocket : public ::testing::Test {
   std::unique_ptr<ThreadPool> thread_pool_main_;
 
   boost::barrier barrier{2};
+
+  std::atomic_int execution_step_{0};
+
+  std::deque<std::unique_ptr<Socket>> client_connections_;
 };
 
 TestSocket::TestSocket() {
@@ -89,14 +96,25 @@ void TestSocket::LaunchServer() {
         barrier.wait();
         LOG_DEBUG("Accepting connection on port " << SERVER_PORT);
 
-        acceptor.DoAccept([&](Socket& socket) {
-          LOG_DEBUG("Accepted socket");
+        acceptor.DoAccept([&](std::unique_ptr<Socket> accepted_socket) {
+          ASSERT_TRUE(accepted_socket);
+          client_connections_.emplace_back(std::move(accepted_socket));
+          auto& socket = *(client_connections_.back());
 
-          BufferType rcv_buffer(5, 0);
-          socket.Read(rcv_buffer);
+          // Ensure that new connection has disbled Nagle's algorythm
+          const auto socket_opts = socket.GetSocketOpts();
+          ASSERT_TRUE(socket_opts.at(Socket::SocketOpt::NoDelay));
+
+          LOG_DEBUG("Accepted socket");
+          execution_step_++;
+          const auto rcv_buffer = socket.ReadExact(sizeof(GREETING) - 1);
+          LOG_DEBUG("Server: received data: " << rcv_buffer);
+          execution_step_++;
           BufferType snd_buffer{SERVER_ECHO_PREFIX};
           snd_buffer += rcv_buffer;
+          LOG_DEBUG("Server: sending data: " << snd_buffer);
           socket.Write(snd_buffer);
+          execution_step_++;
         });
       },
       *thread_pool_net_);
@@ -108,12 +126,16 @@ void TestSocket::LaunchClient() {
       [&] {
         Socket socket;
         socket.Connect("127.0.0.1", SERVER_PORT);
-        BufferType snd_buffer{"hello"};
+        BufferType snd_buffer{GREETING};
+        LOG_DEBUG("Client: sending data: " << snd_buffer);
         socket.Write(snd_buffer);
-        BufferType rcv_buffer(sizeof(SERVER_ECHO_PREFIX) + snd_buffer.length(),
-                              0);
-        socket.Read(rcv_buffer);
+        execution_step_++;
+        LOG_DEBUG("Client: reading reply from server");
+        const auto rcv_buffer = socket.ReadExact(sizeof(SERVER_ECHO_PREFIX) -
+                                                 1 + snd_buffer.length());
+        LOG_DEBUG("Client: received data: " << rcv_buffer);
         ASSERT_EQ(SERVER_ECHO_PREFIX + snd_buffer, rcv_buffer);
+        execution_step_++;
       },
       *thread_pool_net_);
 }
@@ -130,4 +152,6 @@ TEST_F(TestSocket, SocketEchoTest) {
   LaunchClient();
 
   WaitAll();
+
+  ASSERT_EQ(5, execution_step_);
 }

@@ -2,9 +2,13 @@
 
 #pragma once
 
-#include <boost/asio.hpp>
 #include <string>
+#include <unordered_map>
+
+#include "boost/asio.hpp"
+
 #include "net/alias.h"
+#include "util/enum_util.h"
 
 namespace cppecho {
 namespace net {
@@ -15,15 +19,19 @@ class Socket {
  public:
   using EndPointType = boost::asio::ip::tcp::endpoint;
 
+  enum class SocketOpt { NoDelay };
+
   Socket();
 
   Socket(Socket&&) = default;
 
   Socket& operator=(Socket&&) = default;
 
-  void Read(BufferType&);
+  BufferType ReadExact(std::size_t size);
 
-  void PartialRead(BufferType&);
+  BufferType ReadPartial();
+
+  BufferType ReadUntil(const std::string& delimeter);
 
   void Write(const BufferType&);
 
@@ -32,6 +40,12 @@ class Socket {
   void Connect(const EndPointType& end_point);
 
   void Close();
+
+  using SocketOptsMap =
+      std::unordered_map<SocketOpt,
+                         bool,
+                         cppecho::util::enum_util::EnumClassHash>;
+  SocketOptsMap GetSocketOpts() const;
 
  private:
   friend class Acceptor;

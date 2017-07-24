@@ -29,5 +29,7 @@ BufferIoHandlerType BufferIoHandler(BufferType& buffer, IoHandlerType proceed);
 
 BufferIoHandlerType BufferIoHandler(IoHandlerType proceed);
 
+BufferType ToBuffer(const boost::asio::streambuf& streambuf);
+
 }  // namespace net
 }  // namespace cppecho

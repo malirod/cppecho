@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <deque>
 #include <memory>
 #include <string>
 #include "core/iengine.h"
@@ -16,6 +17,15 @@ class IEngineConfig;
 }  // namespace cppecho
 
 namespace cppecho {
+namespace net {
+
+class Socket;
+class Acceptor;
+
+}  // namespace net
+}  // namespace cppecho
+
+namespace cppecho {
 namespace core {
 
 class Engine : public IEngine {
@@ -27,16 +37,31 @@ class Engine : public IEngine {
 
   ~Engine() override;
 
-  bool Launch() override;
+  bool Start() override;
+
+  bool Stop() override;
 
   bool Init() override;
+
+  boost::signals2::connection SubscribeOnStarted(
+      const OnStartedSubsriberType& subscriber) override;
 
  private:
   DECLARE_GET_LOGGER("Core.Engine")
 
+  void OnAccepted(std::unique_ptr<cppecho::net::Socket> accepted_socket);
+
   bool initiated_ = false;
 
   std::unique_ptr<core::IEngineConfig> engine_config_;
+
+  std::atomic_bool stopped_{false};
+
+  OnStartedType on_started_;
+
+  std::unique_ptr<cppecho::net::Acceptor> acceptor_;
+
+  std::deque<std::unique_ptr<cppecho::net::Socket>> client_connections_;
 };
 
 }  // namespace core

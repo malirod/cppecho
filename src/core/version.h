@@ -9,7 +9,7 @@ namespace core {
 namespace version {
 
 const unsigned int kMajor = 0;
-const unsigned int kMinor = 1;
+const unsigned int kMinor = 2;
 const unsigned int kPatch = 0;
 
 std::string GetVersion();

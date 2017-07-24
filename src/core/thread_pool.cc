@@ -46,6 +46,7 @@ cppecho::core::ThreadPool::~ThreadPool() {
     stopped_ = true;
     work_.reset();
   }
+  asio_service_.stop();
   LOG_DEBUG(GetName() << ": Stopping thread pool");
   for (auto&& item : threads_) {
     item.join();

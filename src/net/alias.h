@@ -4,6 +4,7 @@
 
 #include <boost/system/error_code.hpp>
 #include <functional>
+#include <memory>
 #include <string>
 
 namespace cppecho {
@@ -12,7 +13,7 @@ namespace net {
 class Socket;
 
 using BufferType = std::string;
-using SocketHandlerType = std::function<void(Socket&)>;
+using SocketHandlerType = std::function<void(std::unique_ptr<Socket>)>;
 
 using ErrorType = boost::system::error_code;
 using IoHandlerType = std::function<void(const ErrorType&)>;

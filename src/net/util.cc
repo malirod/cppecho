@@ -42,3 +42,9 @@ cppecho::net::BufferIoHandlerType cppecho::net::BufferIoHandler(
     IoHandlerType proceed) {
   return [proceed](const ErrorType& error, std::size_t) { proceed(error); };
 }
+
+cppecho::net::BufferType cppecho::net::ToBuffer(
+    const boost::asio::streambuf& streambuf) {
+  return {boost::asio::buffers_begin(streambuf.data()),
+          boost::asio::buffers_end(streambuf.data())};
+}

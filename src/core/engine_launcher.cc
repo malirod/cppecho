@@ -67,7 +67,7 @@ void cppecho::core::EngineLauncher::DeInit() {
 
 std::error_code cppecho::core::EngineLauncher::DoRun() {
   LOG_AUTO_TRACE();
-  if (!engine_->Launch()) {
+  if (!engine_->Start()) {
     LOG_ERROR("Failed to start Engine");
     return make_error_code(core::GeneralError::StartupFailed);
   }
@@ -75,19 +75,19 @@ std::error_code cppecho::core::EngineLauncher::DoRun() {
       GetDefaultIoServiceAccessorInstance().GetRef().GetAsioService();
 
   boost::asio::signal_set signals(asio_service, SIGINT, SIGTERM);
-  signals.async_wait([&asio_service, this](
-      const boost::system::error_code& error, int signal_number) {
-    if (!error) {
-      LOG_INFO("Termination request received: " << signal_number
-                                                << ". Stopping");
-      asio_service.stop();
-    } else {
-      LOG_ERROR("Error in signals handler: " << error.message());
-    }
-  });
+  signals.async_wait(
+      [&](const boost::system::error_code& error, int signal_number) {
+        if (!error) {
+          LOG_INFO("Termination request received: " << signal_number
+                                                    << ". Stopping");
+          engine_->Stop();
+        } else {
+          LOG_ERROR("Error in signals handler: " << error.message());
+        }
+      });
 
   LOG_INFO("Waiting for termination request");
-  asio_service.run();
+  WaitAll();
 
   return std::error_code();
 }

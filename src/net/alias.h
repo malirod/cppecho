@@ -13,6 +13,7 @@ namespace net {
 class Socket;
 
 using BufferType = std::string;
+using TcpServerIdType = std::size_t;
 using SocketHandlerType = std::function<void(std::unique_ptr<Socket>)>;
 
 using ErrorType = boost::system::error_code;

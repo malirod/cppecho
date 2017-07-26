@@ -73,7 +73,15 @@ bool cppecho::core::Engine::Stop() {
 
   stopped_ = true;
 
-  RunAsync([&]() { acceptor_->Stop(); }, GetNetworkSchedulerAccessorInstance());
+  RunAsync(
+      [&]() {
+        acceptor_->Stop();
+        for (auto&& item : client_connections_) {
+          if (item)
+            item->Close();
+        }
+      },
+      GetNetworkSchedulerAccessorInstance());
 
   return true;
 }

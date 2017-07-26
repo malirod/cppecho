@@ -4,7 +4,11 @@
 
 #include <utility>
 
+#include "core/async.h"
 #include "net/util.h"
+
+using cppecho::net::TcpServerIdType;
+using cppecho::core::RunAsync;
 
 cppecho::net::Socket::Socket()
     : socket_(GetNetworkServiceAccessorInstance().GetRef().GetAsioService()) {}
@@ -69,4 +73,70 @@ cppecho::net::Socket::SocketOptsMap cppecho::net::Socket::GetSocketOpts()
   boost::asio::ip::tcp::no_delay no_delay_option;
   socket_.get_option(no_delay_option);
   return {{SocketOpt::NoDelay, no_delay_option.value()}};
+}
+
+boost::signals2::connection cppecho::net::Socket::SubscribeOnData(
+    const OnDataSubsriberType& subscriber) {
+  LOG_AUTO_TRACE();
+  RegisterToReceive();
+  return on_data_.connect(subscriber);
+}
+
+boost::signals2::connection cppecho::net::Socket::SubscribeOnDisconnected(
+    const OnDisconnectedSubsriberType& subscriber) {
+  LOG_AUTO_TRACE();
+  RegisterToReceive();
+  return on_disconnected_.connect(subscriber);
+}
+
+void cppecho::net::Socket::OnSocketReceived(
+    const boost::system::error_code& error, std::size_t bytes_transferred) {
+  LOG_AUTO_TRACE();
+  RunAsync([error, bytes_transferred, this]() {
+    if ((error == boost::asio::error::eof) ||
+        (error == boost::asio::error::connection_reset)) {
+      LOG_ERROR("OnSocketReceived disconnected");
+      on_disconnected_(*this);
+      return;
+    }
+
+    if (error) {
+      LOG_ERROR("OnSocketReceived error: " << error.value() << ", message: "
+                                           << error.message());
+      socket_.close();
+      on_disconnected_(*this);
+      return;
+    }
+
+    LOG_ERROR("OnSocketReceived raising OnData. bytes_transferred: "
+              << bytes_transferred);
+    auto end_iter = buffer_in_.begin();
+    std::advance(end_iter, bytes_transferred);
+    on_data_(*this, {buffer_in_.begin(), end_iter});
+
+    is_waiting_receive_ = false;
+    RegisterToReceive();
+  });
+}
+
+void cppecho::net::Socket::RegisterToReceive() {
+  LOG_AUTO_TRACE();
+
+  if (is_waiting_receive_)
+    return;
+
+  socket_.async_receive(boost::asio::buffer(&buffer_in_[0], buffer_in_.size()),
+                        std::bind(&Socket::OnSocketReceived,
+                                  this,
+                                  std::placeholders::_1,
+                                  std::placeholders::_2));
+  is_waiting_receive_ = true;
+}
+
+boost::optional<TcpServerIdType> cppecho::net::Socket::GetId() const {
+  return id_;
+}
+
+void cppecho::net::Socket::SetId(boost::optional<TcpServerIdType> id) {
+  id_ = std::move(id);
 }

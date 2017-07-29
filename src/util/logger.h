@@ -39,12 +39,16 @@
 #define LOG_ERRORF(text, ...) DOWHILE_NOTHING()
 #define LOG_FATALF(text, ...) DOWHILE_NOTHING()
 
+#define LOG_AUTO_NDC(msg) DOWHILE_NOTHING()
+
 #else  // DISABLE_LOGGER
 
 // Strip off log lines lower or qeual DEBUG in DEBUG mode
 #if defined(CUT_OFF_DEBUG_LOG)
 #define LOG4CPLUS_DISABLE_DEBUG
 #endif  // CUT_OFF_DEBUG_LOG
+
+#include <string>
 
 #include "log4cplus/logger.h"
 #include "log4cplus/loggingmacros.h"
@@ -72,6 +76,12 @@ class LogManager {
   LogManager(const LogManager&&) = delete;
   LogManager& operator=(const LogManager&) = delete;
   LogManager& operator=(const LogManager&&) = delete;
+};
+
+class NDCWrapper {
+ public:
+  explicit NDCWrapper(const std::string& msg);
+  ~NDCWrapper();
 };
 
 }  // namespace logging
@@ -132,5 +142,7 @@ class LogManager {
   LOG_ERRORL(GetLogger(), cppecho::util::StringFmt(text).format(__VA_ARGS__))
 #define LOG_FATALF(text, ...) \
   LOG_FATALL(GetLogger(), cppecho::util::StringFmt(text).format(__VA_ARGS__))
+
+#define LOG_AUTO_NDC(msg) IMPL_LOGGER_NAMESPACE_::NDCWrapper ndc_wrapper__(msg)
 
 #endif

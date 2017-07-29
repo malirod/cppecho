@@ -53,13 +53,15 @@ std::thread ThreadUtil::CreateThread(Action action, const char* name) {
   return std::thread([action, name] {
     SetCurrentThreadName(name);
     SetCurrentThreadNumber(++GetAtomicInstance<DefaultThreadCounterTag>());
-    LOG_TRACE("Created thread " << GetCurrentThreadId());
+    const auto& id = GetCurrentThreadId();
+    (void)id;
+    LOG_TRACE("Created thread " << id);
+    LOG_AUTO_NDC(id);
     try {
       action();
     } catch (std::exception& e) {
       (void)e;
-      LOG_ERROR(GetCurrentThreadId() << ": Thread ended with error: "
-                                     << e.what());
+      LOG_ERROR(id << ": Thread ended with error: " << e.what());
     }
   });
 }

@@ -6,9 +6,11 @@
 #include "core/default_scheduler_accessor.h"
 #include "core/engine.h"
 #include "core/engine_config.h"
+#include "core/helper.h"
+#include "core/sequential_scheduler.h"
 #include "core/thread_pool.h"
 #include "gtest/gtest.h"
-#include "net/socket.h"
+#include "net/tcp_socket.h"
 #include "net/util.h"
 #include "util/logger.h"
 #include "util/smartptr_util.h"
@@ -22,14 +24,13 @@ using cppecho::core::RunAsync;
 using cppecho::core::IEngine;
 using cppecho::core::Engine;
 using cppecho::util::make_unique;
-using cppecho::net::GetNetworkServiceAccessorInstance;
-using cppecho::net::GetNetworkSchedulerAccessorInstance;
 using cppecho::core::GetDefaultIoServiceAccessorInstance;
-using cppecho::core::GetDefaultSchedulerAccessorInstance;
 using cppecho::core::EngineConfig;
 using cppecho::core::WaitAll;
-using cppecho::net::Socket;
+using cppecho::net::TcpSocket;
 using cppecho::net::BufferType;
+using cppecho::core::SchedulersInitiator;
+using cppecho::core::SequentialScheduler;
 
 const char SERVER_ADDRESS[] = "127.0.0.1";
 
@@ -37,107 +38,44 @@ const int SERVER_PORT = 10124;
 
 const char GREETING[] = "Hello World!!!\n";
 
-class TestEngine : public ::testing::Test {
- public:
-  TestEngine();
+}  // namespace
 
-  ~TestEngine() override;
+TEST(TestEngine, EngineEchoTest) {
+  LOG_AUTO_TRACE();
 
- protected:
-  void LaunchEngine();
-
-  void LaunchClient();
-
-  std::unique_ptr<ThreadPool> thread_pool_net_;
-
-  std::unique_ptr<ThreadPool> thread_pool_main_;
-
-  std::unique_ptr<IEngine> engine_;
-
-  std::atomic_int execution_step_{0};
-
-  std::deque<std::unique_ptr<Socket>> client_connections_;
-};
-
-TestEngine::TestEngine() {
-  LOG_DEBUG("Setup");
-
-  const auto hardware_threads_count = std::thread::hardware_concurrency();
-  const int thread_pool_size =
-      hardware_threads_count >= 2 ? hardware_threads_count : 2;
-
-  thread_pool_net_ = make_unique<ThreadPool>(thread_pool_size, "net");
-
-  thread_pool_main_ = make_unique<ThreadPool>(thread_pool_size, "main");
-
-  GetDefaultIoServiceAccessorInstance().Attach(*thread_pool_main_);
-  GetDefaultSchedulerAccessorInstance().Attach(*thread_pool_main_);
-
-  GetNetworkServiceAccessorInstance().Attach(*thread_pool_net_);
-  GetNetworkSchedulerAccessorInstance().Attach(*thread_pool_net_);
+  auto schedulers_initiator = make_unique<SchedulersInitiator>();
+  std::atomic_int execution_step{0};
 
   auto engine_config = make_unique<EngineConfig>();
   engine_config->SetServerAddress(SERVER_ADDRESS);
   engine_config->SetServerPort(SERVER_PORT);
 
-  engine_ = make_unique<Engine>(std::move(engine_config));
+  auto engine = make_unique<Engine>(std::move(engine_config));
 
-  const auto initiated = engine_->Init();
+  const auto initiated = engine->Init();
   EXPECT_TRUE(initiated);
-}
 
-TestEngine::~TestEngine() {
-  LOG_DEBUG("Teardown");
+  engine->SubscribeOnStarted([&]() {
+    auto socket = TcpSocket::Create();
+    socket->Connect(SERVER_ADDRESS, SERVER_PORT);
+    ++execution_step;
 
-  GetNetworkServiceAccessorInstance().Detach();
-  GetNetworkSchedulerAccessorInstance().Detach();
+    BufferType snd_buffer{GREETING};
+    socket->Write(snd_buffer);
+    ++execution_step;
 
-  GetDefaultIoServiceAccessorInstance().Detach();
-  GetDefaultSchedulerAccessorInstance().Detach();
+    const auto rcv_buffer = socket->ReadUntil("\n");
+    ASSERT_EQ("echo: " + snd_buffer, rcv_buffer);
+    ++execution_step;
 
-  thread_pool_net_.reset();
-  thread_pool_main_.reset();
-}
-
-void TestEngine::LaunchEngine() {
-  const auto launched = engine_->Start();
-  ASSERT_TRUE(launched);
-}
-
-void TestEngine::LaunchClient() {
-  RunAsync(
-      [&] {
-        Socket socket;
-        socket.Connect(SERVER_ADDRESS, SERVER_PORT);
-        execution_step_++;
-
-        BufferType snd_buffer{GREETING};
-        socket.Write(snd_buffer);
-        execution_step_++;
-
-        const auto rcv_buffer = socket.ReadUntil("\n");
-        ASSERT_EQ("echo: " + snd_buffer, rcv_buffer);
-        execution_step_++;
-
-        engine_->Stop();
-        execution_step_++;
-      },
-      *thread_pool_net_);
-}
-
-}  // namespace
-
-TEST_F(TestEngine, EngineEchoTest) {
-  LOG_AUTO_TRACE();
-
-  engine_->SubscribeOnStarted([&]() {
-    LaunchClient();
-    execution_step_++;
+    engine->Stop();
+    ++execution_step;
   });
 
-  LaunchEngine();
+  const auto launched = engine->Start();
+  ASSERT_TRUE(launched);
 
   WaitAll();
 
-  ASSERT_EQ(5, execution_step_);
+  ASSERT_EQ(4, execution_step);
 }

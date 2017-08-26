@@ -12,6 +12,7 @@ namespace cppecho {
 namespace core {
 
 class IEngineConfig;
+class SequentialScheduler;
 
 }  // namespace core
 }  // namespace cppecho
@@ -19,8 +20,7 @@ class IEngineConfig;
 namespace cppecho {
 namespace net {
 
-class Socket;
-class Acceptor;
+class TcpServer;
 
 }  // namespace net
 }  // namespace cppecho
@@ -46,22 +46,25 @@ class Engine : public IEngine {
   boost::signals2::connection SubscribeOnStarted(
       const OnStartedSubsriberType& subscriber) override;
 
+  boost::signals2::connection SubscribeOnStopped(
+      const OnStoppedSubsriberType& subscriber) override;
+
  private:
   DECLARE_GET_LOGGER("Core.Engine")
-
-  void OnAccepted(std::unique_ptr<cppecho::net::Socket> accepted_socket);
 
   bool initiated_ = false;
 
   std::unique_ptr<core::IEngineConfig> engine_config_;
 
+  std::unique_ptr<core::SequentialScheduler> main_sequential_scheduler_;
+
+  std::unique_ptr<net::TcpServer> tcp_server_;
+
   std::atomic_bool stopped_{false};
 
   OnStartedType on_started_;
 
-  std::unique_ptr<cppecho::net::Acceptor> acceptor_;
-
-  std::deque<std::unique_ptr<cppecho::net::Socket>> client_connections_;
+  OnStoppedType on_stopped_;
 };
 
 }  // namespace core

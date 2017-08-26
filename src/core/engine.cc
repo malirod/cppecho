@@ -10,20 +10,33 @@
 #include "core/default_scheduler_accessor.h"
 #include "core/iengine_config.h"
 #include "core/ischeduler.h"
+#include "core/sequential_scheduler.h"
 #include "net/acceptor.h"
+#include "net/tcp_server.h"
 #include "net/util.h"
 #include "util/smartptr_util.h"
 
 using cppecho::net::GetNetworkSchedulerAccessorInstance;
 using cppecho::net::GetNetworkServiceAccessorInstance;
-using cppecho::net::Acceptor;
-using cppecho::net::BufferType;
-using cppecho::net::Socket;
 using cppecho::util::make_unique;
+using cppecho::net::TcpServer;
+using cppecho::net::TcpServerIdType;
+using cppecho::net::BufferType;
+
+namespace {
+
+const int MAX_CONNECTIONS_COUNT = 100;
+const char SERVER_ECHO_PREFIX[] = "echo: ";
+const char main_sequential_scheduler_name[] = "main_sequential";
+
+}  // namespace
 
 cppecho::core::Engine::Engine(
     std::unique_ptr<core::IEngineConfig> engine_config)
-    : engine_config_(std::move(engine_config)) {
+    : engine_config_(std::move(engine_config))
+    , main_sequential_scheduler_(make_unique<SequentialScheduler>(
+          GetDefaultIoServiceAccessorInstance().GetRef(),
+          main_sequential_scheduler_name)) {
   LOG_AUTO_TRACE();
   assert(engine_config_ != nullptr && "Config is not set");
   LOG_INFO("Engine has been created.");
@@ -39,28 +52,45 @@ cppecho::core::Engine::~Engine() {
 
 bool cppecho::core::Engine::Start() {
   LOG_AUTO_TRACE();
-  LOG_INFO("Starting engine. Listenig on " << engine_config_->GetServerAddress()
-                                           << ":"
-                                           << engine_config_->GetServerPort());
+  LOG_INFO("Starting engine");
   assert(initiated_);
 
   RunAsync(
       [&]() {
-        acceptor_ = make_unique<Acceptor>(engine_config_->GetServerAddress(),
-                                          engine_config_->GetServerPort());
-        LOG_INFO("Accepting client connections on "
-                 << engine_config_->GetServerAddress()
-                 << ":"
-                 << engine_config_->GetServerPort());
+        tcp_server_ = make_unique<TcpServer>(MAX_CONNECTIONS_COUNT);
 
-        on_started_();
+        tcp_server_->SubscribeOnListening([&]() {
+          LOG_INFO("Listenig on " << engine_config_->GetServerAddress() << ":"
+                                  << engine_config_->GetServerPort());
+          on_started_();
+        });
 
-        while (!stopped_) {
-          acceptor_->DoAccept(
-              std::bind(&Engine::OnAccepted, this, std::placeholders::_1));
-        }
+        tcp_server_->SubscribeOnConnected([&](TcpServerIdType id) {
+          LOG_DEBUG("Client Connected. Id: " << id);
+        });
+
+        tcp_server_->SubscribeOnData(
+            [&](TcpServerIdType id, const BufferType& data) {
+              LOG_DEBUG("Received data: " << data);
+              BufferType snd_buffer{SERVER_ECHO_PREFIX};
+              snd_buffer += data;
+              LOG_DEBUG("Sending data: " << snd_buffer);
+              tcp_server_->Write(id, snd_buffer);
+            });
+
+        tcp_server_->SubscribeOnDisconnected([&](TcpServerIdType id) {
+          LOG_DEBUG("Client DisConnected. Id: " << id);
+        });
+
+        tcp_server_->SubscribeOnStopped([&]() {
+          LOG_DEBUG("TcpServer has been closed.");
+          on_stopped_();
+        });
+
+        tcp_server_->Start(engine_config_->GetServerAddress(),
+                           engine_config_->GetServerPort());
       },
-      GetNetworkSchedulerAccessorInstance());
+      *main_sequential_scheduler_);
 
   LOG_INFO("Engine has been launched.");
   return true;
@@ -71,17 +101,14 @@ bool cppecho::core::Engine::Stop() {
   LOG_INFO("Stopping engine");
   assert(initiated_);
 
+  if (stopped_) {
+    LOG_INFO("Already stopped. Skip.");
+    return true;
+  }
+
   stopped_ = true;
 
-  RunAsync(
-      [&]() {
-        acceptor_->Stop();
-        for (auto&& item : client_connections_) {
-          if (item)
-            item->Close();
-        }
-      },
-      GetNetworkSchedulerAccessorInstance());
+  RunAsync([&]() { tcp_server_->Stop(); }, *main_sequential_scheduler_);
 
   return true;
 }
@@ -94,19 +121,14 @@ bool cppecho::core::Engine::Init() {
   return initiated_;
 }
 
-void cppecho::core::Engine::OnAccepted(
-    std::unique_ptr<Socket> accepted_socket) {
-  LOG_DEBUG("Accepted socket");
-  assert(accepted_socket);
-  client_connections_.emplace_back(std::move(accepted_socket));
-  auto& socket = *(client_connections_.back());
-  const auto rcv_buffer = boost::algorithm::trim_copy(socket.ReadUntil("\n"));
-  LOG_DEBUG("Read from socket: " << rcv_buffer);
-  socket.Write("echo: " + rcv_buffer + '\n');
-}
-
 boost::signals2::connection cppecho::core::Engine::SubscribeOnStarted(
     const OnStartedSubsriberType& subscriber) {
   LOG_AUTO_TRACE();
   return on_started_.connect(subscriber);
+}
+
+boost::signals2::connection cppecho::core::Engine::SubscribeOnStopped(
+    const OnStoppedSubsriberType& subscriber) {
+  LOG_AUTO_TRACE();
+  return on_stopped_.connect(subscriber);
 }

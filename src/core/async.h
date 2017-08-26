@@ -14,6 +14,7 @@ namespace cppecho {
 namespace core {
 
 class IScheduler;
+class IIoService;
 
 AsyncOpState RunAsync(HandlerType handler, IScheduler& scheduler);
 
@@ -24,6 +25,10 @@ void RunAsyncTimes(std::int32_t n, HandlerType handler);
 void SwitchTo(IScheduler& scheduler);
 
 int GetCurrentThreadContextSwitcherIndex();
+
+IScheduler& GetCurrentThreadScheduler();
+
+IIoService& GetCurrentThreadIoService();
 
 void HandleEvents();
 
@@ -52,7 +57,7 @@ class Waiter {
   Waiter();
   ~Waiter();
 
-  Waiter& RunAsync(HandlerType h);
+  Waiter& RunAsync(HandlerType handler);
 
   void Wait();
 

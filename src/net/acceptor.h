@@ -2,11 +2,12 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 
 #include "boost/asio.hpp"
 #include "net/alias.h"
-#include "net/socket.h"
+#include "net/tcp_socket.h"
 #include "util/logger.h"
 
 namespace cppecho {
@@ -27,7 +28,7 @@ class Acceptor {
  private:
   DECLARE_GET_LOGGER("Net.Acceptor")
 
-  Socket Accept();
+  std::shared_ptr<TcpSocket> Accept();
 
   boost::asio::ip::tcp::acceptor acceptor_;
 };

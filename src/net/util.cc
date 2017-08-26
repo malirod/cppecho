@@ -3,6 +3,9 @@
 #include "net/util.h"
 #include "core/alias.h"
 #include "core/async.h"
+#include "util/logger.h"
+
+DECLARE_GLOBAL_GET_LOGGER("Net.Util");
 
 cppecho::net::NetworkServiceAccessor&
 cppecho::net::GetNetworkServiceAccessorInstance() {
@@ -14,7 +17,7 @@ cppecho::net::GetNetworkSchedulerAccessorInstance() {
   return cppecho::util::single<NetworkIoSchedulerAccessor>();
 }
 
-void cppecho::net::DeferIo(CallbackIoHandlerType callback) {
+cppecho::net::ErrorType cppecho::net::DeferIo(CallbackIoHandlerType callback) {
   ErrorType error;
   cppecho::core::DeferProceed(
       [callback, &error](cppecho::core::HandlerType proceed) {
@@ -23,9 +26,7 @@ void cppecho::net::DeferIo(CallbackIoHandlerType callback) {
           proceed();
         });
       });
-  if (!!error) {
-    throw boost::system::system_error(error, "Network");
-  }
+  return error;
 }
 
 cppecho::net::BufferIoHandlerType cppecho::net::BufferIoHandler(

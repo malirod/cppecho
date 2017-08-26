@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "boost/asio.hpp"
@@ -27,7 +28,7 @@ class TcpServer {
 
   explicit TcpServer(int max_connections);
 
-  void Start(const boost::asio::ip::tcp::endpoint& endpoint);
+  void Start(const EndPointType& endpoint);
 
   void Start(int port);
 
@@ -35,11 +36,12 @@ class TcpServer {
 
   void Stop();
 
-  bool Close(TcpServerIdType id);
+  void StopClient(TcpServerIdType id);
 
   boost::optional<BufferType> ReadExact(TcpServerIdType id, std::size_t size);
 
-  boost::optional<BufferType> ReadPartial(TcpServerIdType id);
+  boost::optional<std::pair<BufferType, ErrorType>> ReadPartial(
+      TcpServerIdType id);
 
   boost::optional<BufferType> ReadUntil(TcpServerIdType id,
                                         const std::string& delimeter);
@@ -71,18 +73,28 @@ class TcpServer {
   boost::signals2::connection SubscribeOnDisconnected(
       const OnDisconnectedSubsriberType& subscriber);
 
+  using OnStoppedType = boost::signals2::signal<void()>;
+  using OnStoppedSubsriberType = OnStoppedType::slot_type;
+
+  boost::signals2::connection SubscribeOnStopped(
+      const OnStoppedSubsriberType& subscriber);
+
  private:
   DECLARE_GET_LOGGER("Net.TcpServer")
 
-  void OnAccepted(std::unique_ptr<Socket> accepted_socket);
+  void OnAccepted(std::shared_ptr<TcpSocket> accepted_socket);
 
   boost::optional<TcpServerIdType> GetNewConnectionIndex() const;
 
-  Socket* GetSocket(TcpServerIdType id);
+  std::shared_ptr<TcpSocket> GetSocket(TcpServerIdType id);
+
+  void RaiseOnClosed();
+
+  std::size_t GetConnectedCount() const;
 
   const int max_connections_;
 
-  std::atomic_bool stopped_{false};
+  bool is_running_ = false;
 
   OnConnectedType on_connected_;
 
@@ -92,9 +104,12 @@ class TcpServer {
 
   OnDisconnectedType on_disconnected_;
 
+  OnStoppedType on_stopped_;
+
   std::unique_ptr<cppecho::net::Acceptor> acceptor_;
 
-  std::vector<std::unique_ptr<cppecho::net::Socket>> client_connections_;
+  using ClientConnectionItemType = std::shared_ptr<cppecho::net::TcpSocket>;
+  std::vector<ClientConnectionItemType> client_connections_;
 };
 
 }  // namespace net

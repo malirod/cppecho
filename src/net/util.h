@@ -23,7 +23,7 @@ using NetworkIoSchedulerAccessor =
     cppecho::util::SingleAccessor<IScheduler, NetworkTag>;
 NetworkIoSchedulerAccessor& GetNetworkSchedulerAccessorInstance();
 
-void DeferIo(CallbackIoHandlerType callback);
+ErrorType DeferIo(CallbackIoHandlerType callback);
 
 BufferIoHandlerType BufferIoHandler(BufferType& buffer, IoHandlerType proceed);
 

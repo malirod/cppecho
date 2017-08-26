@@ -24,7 +24,7 @@ class AsyncRunner {
 
   void DeferProceed(ProceedHandlerType proceed);
 
-  void SwitchTo(IScheduler& dest);
+  void SwitchTo(IScheduler& dst);
 
   void HandleEvents() const;
 

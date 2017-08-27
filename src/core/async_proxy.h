@@ -8,14 +8,14 @@
 namespace cppecho {
 namespace core {
 
-class AsyncProxy {
+class AsyncProxyBase {
  public:
-  explicit AsyncProxy(IScheduler& destination);
+  explicit AsyncProxyBase(IScheduler& destination);
 
-  ~AsyncProxy();
+  ~AsyncProxyBase();
 
  private:
-  DECLARE_GET_LOGGER("Core.AsyncProxy")
+  DECLARE_GET_LOGGER("Core.AsyncProxyBase")
 
   IScheduler& source;
 };
@@ -23,9 +23,9 @@ class AsyncProxy {
 template <typename T>
 class WithAsyncProxy : public util::SingleAccessor<IScheduler> {
  public:
-  struct Access : AsyncProxy {
+  struct Access : AsyncProxyBase {
     explicit Access(util::SingleAccessor<IScheduler>& single)
-        : AsyncProxy(single) {}
+        : AsyncProxyBase(single) {}
     T* operator->() {
       return &util::single<T>();
     }

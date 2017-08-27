@@ -5,13 +5,13 @@
 #include "core/async_runner.h"
 #include "core/ischeduler.h"
 
-cppecho::core::AsyncProxy::AsyncProxy(IScheduler& destination)
+cppecho::core::AsyncProxyBase::AsyncProxyBase(IScheduler& destination)
     : source(GetCurrentThreadAsyncRunner().GetScheduler()) {
   LOG_DEBUG("Switching context from " << source.GetName() << " to "
                                       << destination.GetName());
   SwitchTo(destination);
 }
 
-cppecho::core::AsyncProxy::~AsyncProxy() {
+cppecho::core::AsyncProxyBase::~AsyncProxyBase() {
   SwitchTo(source);
 }

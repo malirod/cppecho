@@ -18,7 +18,10 @@ AsyncOpState cppecho::core::RunAsync(HandlerType handler,
 }
 
 AsyncOpState cppecho::core::RunAsync(HandlerType handler) {
-  return RunAsync(std::move(handler), GetDefaultSchedulerAccessorInstance());
+  auto& scheduler = IsCurrentThreadHasAsyncRunner()
+                        ? GetCurrentThreadScheduler()
+                        : GetDefaultSchedulerAccessorInstance();
+  return RunAsync(std::move(handler), scheduler);
 }
 
 void cppecho::core::RunAsyncTimes(std::int32_t n, HandlerType handler) {
@@ -155,4 +158,12 @@ cppecho::core::Timeout::~Timeout() {
   LOG_AUTO_TRACE();
   timer_.cancel_one();
   HandleEvents();
+}
+
+cppecho::core::IScheduler& cppecho::core::GetCurrentThreadScheduler() {
+  return GetCurrentThreadAsyncRunner().GetScheduler();
+}
+
+cppecho::core::IIoService& cppecho::core::GetCurrentThreadIoService() {
+  return GetCurrentThreadAsyncRunner().GetIoService();
 }

@@ -6,6 +6,7 @@
 #include <fstream>
 #include <vector>
 #include "log4cplus/configurator.h"
+#include "log4cplus/ndc.h"
 
 namespace {
 
@@ -36,6 +37,14 @@ IMPL_LOGGER_NAMESPACE_::LogManager::~LogManager() {
 
 void IMPL_LOGGER_NAMESPACE_::LogManager::Shutdown() {
   log4cplus::Logger::shutdown();
+}
+
+IMPL_LOGGER_NAMESPACE_::NDCWrapper::NDCWrapper(const std::string& msg) {
+  log4cplus::getNDC().push(msg);
+}
+
+IMPL_LOGGER_NAMESPACE_::NDCWrapper::~NDCWrapper() {
+  log4cplus::getNDC().pop_void();
 }
 
 #endif

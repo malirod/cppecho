@@ -1,17 +1,19 @@
 // Copyright [2016] <Malinovsky Rodion>
 
 #include "core/async_runner.h"
+#include <mutex>
 #include <thread>
 #include <utility>
 #include "util/enum_util.h"
+#include "util/singleton.h"
 #include "util/thread_util.h"
 
 namespace {
 
 thread_local cppecho::core::AsyncRunner* thrd_ptr_async_runner = nullptr;
 
-class CtorCountTag;
-class DtorCountTag;
+class RunnerIndexTag;
+class RunnerCountTag;
 
 }  // namesapce
 
@@ -20,15 +22,16 @@ cppecho::core::AsyncRunner::AsyncRunner(IScheduler& scheduler)
     , is_events_allowed_(true)
     , scheduler_(&scheduler)
     , coro_helper_()
-    , index_(++util::GetAtomicInstance<CtorCountTag>()) {
+    , index_(++util::GetAtomicInstance<RunnerIndexTag>())
+    , count_(++util::GetAtomicInstance<RunnerCountTag>()) {
   LOG_AUTO_TRACE();
-  LOG_TRACE("CtorCountTag=" << util::GetAtomicInstance<CtorCountTag>());
+  LOG_DEBUG("Created runner with index=" << index_ << ", count=" << count_);
 }
 
 cppecho::core::AsyncRunner::~AsyncRunner() {
   LOG_AUTO_TRACE();
-  ++util::GetAtomicInstance<DtorCountTag>();
-  LOG_TRACE("DtorCountTag=" << util::GetAtomicInstance<CtorCountTag>());
+  const auto count = --util::GetAtomicInstance<RunnerCountTag>();
+  LOG_DEBUG("Destroying runner with index=" << index_ << ". count=" << count);
 }
 
 void cppecho::core::AsyncRunner::Proceed() {
@@ -107,6 +110,10 @@ cppecho::core::IScheduler& cppecho::core::AsyncRunner::GetScheduler() {
   return *scheduler_;
 }
 
+cppecho::core::IIoService& cppecho::core::AsyncRunner::GetIoService() {
+  return util::ThreadUtil::GetCurrentThreadIoSerivce();
+}
+
 int cppecho::core::AsyncRunner::GetIndex() const {
   return index_;
 }
@@ -126,9 +133,22 @@ cppecho::core::AsyncOpState cppecho::core::AsyncRunner::Create(
 
 void cppecho::core::AsyncRunner::WaitAll() {
   LOG_AUTO_TRACE();
-  while (util::GetAtomicInstance<CtorCountTag>() !=
-         util::GetAtomicInstance<DtorCountTag>()) {
+
+  const auto is_can_break = [&]() {
+    const auto counter = util::GetAtomicInstance<RunnerCountTag>().load();
+    if (counter == 0) {
+      LOG_TRACE("Wait done: count=" << counter);
+      return true;
+    }
+    LOG_TRACE("Keep waiting: count=" << counter);
+    return false;
+  };
+
+  while (true) {
     std::this_thread::yield();
+    if (is_can_break()) {
+      break;
+    }
   }
 }
 
@@ -142,8 +162,8 @@ cppecho::core::AsyncOpState cppecho::core::AsyncRunner::Start(
       LOG_DEBUG("Coroutine started");
       try {
         handler();
-      } catch (std::exception& e) {
-        LOG_DEBUG("Exception in Deferer: " << e.what());
+      } catch (const std::exception& e) {
+        LOG_ERROR("Exception in Deferer: " << e.what());
       }
       LOG_DEBUG("Coroutine ended");
     });
@@ -195,8 +215,12 @@ void cppecho::core::AsyncRunner::OnExit() noexcept {
 
 DECLARE_GLOBAL_GET_LOGGER("Core.AsyncRunner")
 
+bool cppecho::core::IsCurrentThreadHasAsyncRunner() {
+  return thrd_ptr_async_runner != nullptr;
+}
+
 cppecho::core::AsyncRunner& cppecho::core::GetCurrentThreadAsyncRunner() {
-  assert(thrd_ptr_async_runner != nullptr &&
+  assert(IsCurrentThreadHasAsyncRunner() &&
          "AsyncRunner is not assigned to current thread");
   return *thrd_ptr_async_runner;
 }

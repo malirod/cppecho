@@ -12,7 +12,7 @@ thread_local CoroHelper* thrd_ptr_coro_helper = nullptr;
 
 class Guard {
  public:
-  explicit Guard(CoroHelper& ptr_co_helper);
+  explicit Guard(CoroHelper& ptr_coro_helper);
   ~Guard();
   DECLARE_GET_LOGGER("Core.CoroHelper.Guard")
 };

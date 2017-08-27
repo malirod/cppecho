@@ -10,6 +10,14 @@
 #include "util/type_traits.h"
 
 namespace cppecho {
+namespace core {
+
+class IIoService;
+
+}  // namespace core
+}  // namespace cppecho
+
+namespace cppecho {
 namespace util {
 
 class ThreadUtil {
@@ -27,6 +35,10 @@ class ThreadUtil {
   static std::string GetCurrentThreadId();
 
   static int GenNewThreadNumber();
+
+  static void SetCurrentThreadIoSerivce(cppecho::core::IIoService& ioservice);
+
+  static cppecho::core::IIoService& GetCurrentThreadIoSerivce();
 
   template <typename Action>
   static std::thread CreateThread(Action action, const char* name);
@@ -53,13 +65,15 @@ std::thread ThreadUtil::CreateThread(Action action, const char* name) {
   return std::thread([action, name] {
     SetCurrentThreadName(name);
     SetCurrentThreadNumber(++GetAtomicInstance<DefaultThreadCounterTag>());
-    LOG_TRACE("Created thread " << GetCurrentThreadId());
+    const auto& id = GetCurrentThreadId();
+    (void)id;
+    LOG_TRACE("Created thread " << id);
+    LOG_AUTO_NDC(id);
     try {
       action();
     } catch (std::exception& e) {
       (void)e;
-      LOG_ERROR(GetCurrentThreadId() << ": Thread ended with error: "
-                                     << e.what());
+      LOG_ERROR(id << ": Thread ended with error: " << e.what());
     }
   });
 }

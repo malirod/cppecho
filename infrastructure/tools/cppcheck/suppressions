@@ -1,2 +1,3 @@
-passedByValue
 unmatchedSuppression:src/util/enum_util.h
+unmatchedSuppression:src/net/tcp_server.h
+functionConst:src/net/tcp_server.h

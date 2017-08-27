@@ -19,6 +19,7 @@ cppecho::core::ThreadPool::ThreadPool(const std::size_t thread_count,
   for (std::size_t i = 0u; i < thread_count; ++i) {
     threads_.emplace_back(util::ThreadUtil::CreateThread(
         [this] {
+          util::ThreadUtil::SetCurrentThreadIoSerivce(*this);
           barrier_.wait();
           while (true) {
             asio_service_.run();
@@ -46,6 +47,7 @@ cppecho::core::ThreadPool::~ThreadPool() {
     stopped_ = true;
     work_.reset();
   }
+  asio_service_.stop();
   LOG_DEBUG(GetName() << ": Stopping thread pool");
   for (auto&& item : threads_) {
     item.join();

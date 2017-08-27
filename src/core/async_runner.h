@@ -5,6 +5,7 @@
 #include "core/alias.h"
 #include "core/async_op_state.h"
 #include "core/coro_helper.h"
+#include "core/iioservice.h"
 #include "core/ischeduler.h"
 #include "util/logger.h"
 
@@ -23,7 +24,7 @@ class AsyncRunner {
 
   void DeferProceed(ProceedHandlerType proceed);
 
-  void SwitchTo(IScheduler& dest);
+  void SwitchTo(IScheduler& dst);
 
   void HandleEvents() const;
 
@@ -32,6 +33,8 @@ class AsyncRunner {
   void EnableEvents();
 
   IScheduler& GetScheduler();
+
+  IIoService& GetIoService();
 
   int GetIndex() const;
 
@@ -89,8 +92,12 @@ class AsyncRunner {
 
   CoroHelper coro_helper_;
 
-  int index_;
+  const int index_;
+
+  const int count_;
 };
+
+bool IsCurrentThreadHasAsyncRunner();
 
 AsyncRunner& GetCurrentThreadAsyncRunner();
 

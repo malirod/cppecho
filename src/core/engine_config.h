@@ -3,10 +3,10 @@
 #pragma once
 
 #include <string>
-#include "model/iengine_config.h"
+#include "core/iengine_config.h"
 
 namespace cppecho {
-namespace model {
+namespace core {
 
 class EngineConfig : public IEngineConfig {
  public:
@@ -26,5 +26,5 @@ class EngineConfig : public IEngineConfig {
   PortType server_port_ = 0u;
 };
 
-}  // namespace model
+}  // namespace core
 }  // namespace cppecho

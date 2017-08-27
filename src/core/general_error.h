@@ -6,7 +6,7 @@
 #include <system_error>
 
 namespace cppecho {
-namespace model {
+namespace core {
 
 enum class GeneralError {
   Success,
@@ -19,7 +19,7 @@ class ErrorCategory : public std::error_category {
  public:
   const char* name() const noexcept override;
 
-  std::string message(int errorValue) const override;
+  std::string message(int error_value) const override;
 
   static const std::error_category& get();
 
@@ -30,12 +30,12 @@ class ErrorCategory : public std::error_category {
 std::error_condition make_error_condition(GeneralError error) noexcept;
 std::error_code make_error_code(GeneralError error) noexcept;
 
-}  // namespace model
+}  // namespace core
 }  // namespace cppecho
 
 // Register for implicit conversion to error_condition
 namespace std {
 template <>
-struct is_error_condition_enum<cppecho::model::GeneralError>
-    : public true_type {};
+struct is_error_condition_enum<cppecho::core::GeneralError> : public true_type {
+};
 }  // namespace std

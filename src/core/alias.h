@@ -14,5 +14,7 @@ using AsioServiceStrandType = boost::asio::io_service::strand;
 using HandlerType = std::function<void()>;
 using ProceedHandlerType = std::function<void(HandlerType)>;
 
+using PortType = std::uint32_t;
+
 }  // namespace core
 }  // namespace cppecho

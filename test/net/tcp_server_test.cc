@@ -207,6 +207,7 @@ TEST(TestTcpServer, MaxConnections) {
         });
 
         tcp_server->SubscribeOnConnected([&](TcpServerIdType id) {
+          ASSERT_GT(id, 0u);
           ASSERT_EQ(net_sequential_scheduler_name,
                     cppecho::core::GetCurrentThreadScheduler().GetName());
           LOG_DEBUG("Server: Connected: id=" << id);
@@ -214,6 +215,7 @@ TEST(TestTcpServer, MaxConnections) {
         });
 
         tcp_server->SubscribeOnDisconnected([&](TcpServerIdType id) {
+          ASSERT_GT(id, 0u);
           ASSERT_EQ(net_sequential_scheduler_name,
                     cppecho::core::GetCurrentThreadScheduler().GetName());
           LOG_DEBUG("Server: DisConnected: id=" << id);

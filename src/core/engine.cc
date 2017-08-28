@@ -66,6 +66,7 @@ bool cppecho::core::Engine::Start() {
         });
 
         tcp_server_->SubscribeOnConnected([&](TcpServerIdType id) {
+          (void)id;
           LOG_DEBUG("Client Connected. Id: " << id);
         });
 
@@ -79,6 +80,7 @@ bool cppecho::core::Engine::Start() {
             });
 
         tcp_server_->SubscribeOnDisconnected([&](TcpServerIdType id) {
+          (void)id;
           LOG_DEBUG("Client DisConnected. Id: " << id);
         });
 

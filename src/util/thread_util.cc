@@ -3,7 +3,6 @@
 #include "util/thread_util.h"
 #include <atomic>
 #include <thread>
-#include "boost/format.hpp"
 #include "core/iioservice.h"
 
 namespace {
@@ -37,8 +36,8 @@ void cppecho::util::SleepFor(int ms) {
 }
 
 std::string cppecho::util::ThreadUtil::GetCurrentThreadId() {
-  return str(boost::format("[@%1%:%2%]") % GetCurrentThreadName() %
-             GetCurrentThreadNumber());
+  return "[" + std::string(GetCurrentThreadName()) + ":" +
+         std::to_string(GetCurrentThreadNumber()) + "]";
 }
 
 void cppecho::util::ThreadUtil::SetCurrentThreadIoSerivce(

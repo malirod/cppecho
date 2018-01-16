@@ -1,10 +1,10 @@
-// Copyright [2016] <Malinovsky Rodion>
+// Copyright [2017] <Malinovsky Rodion>
 
 #pragma once
 
 #include <cassert>
 
-namespace cppecho {
+namespace rms {
 namespace util {
 
 template <typename T, typename Tag = T>
@@ -16,7 +16,7 @@ class SingleAccessor {
 
   bool GetIsAttached() const;
 
-  operator T&();
+  operator T&();  // NOLINT
 
   T& GetRef();
 
@@ -26,8 +26,8 @@ class SingleAccessor {
 
 template <typename T, typename Tag = T>
 T& single() {
-  static T t;
-  return t;
+  static T singleton;
+  return singleton;
 }
 
 template <typename T, typename Tag>
@@ -57,4 +57,4 @@ bool SingleAccessor<T, Tag>::GetIsAttached() const {
 }
 
 }  // namespace util
-}  // namespace cppecho
+}  // namespace rms

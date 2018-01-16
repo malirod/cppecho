@@ -1,18 +1,16 @@
-// Copyright [2016] <Malinovsky Rodion>
+// Copyright [2017] <Malinovsky Rodion>
 
 #pragma once
 
-#include <memory>
 #include <utility>
 
-namespace cppecho {
+namespace rms {
 namespace util {
 
 template <typename CleanupAction>
 class ScopeGuard {
  public:
-  explicit ScopeGuard(CleanupAction&& cleanup_action)
-      : cleanup_action_(std::move(cleanup_action)) {}
+  explicit ScopeGuard(CleanupAction&& cleanup_action) : cleanup_action_(std::move(cleanup_action)) {}
 
   ~ScopeGuard() {
     cleanup_action_();
@@ -28,4 +26,4 @@ ScopeGuard<CleanupAction> MakeScopeGuard(CleanupAction cleanup_action) {
 }
 
 }  // namespace util
-}  // namespace cppecho
+}  // namespace rms

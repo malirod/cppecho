@@ -1,4 +1,15 @@
-[submodule "thirdparty/log4cplus"]
-	path = thirdparty/log4cplus
-	url = https://github.com/log4cplus/log4cplus.git
-	ignore = dirty
+[submodule "cmake/sanitizers-cmake"]
+	path = cmake/sanitizers-cmake
+	url = https://github.com/arsenm/sanitizers-cmake.git
+[submodule "cmake/CMake-codecov"]
+	path = cmake/CMake-codecov
+    url = https://github.com/RWTH-HPC/CMake-codecov.git
+[submodule "tools/conan/recipe/conan-gtest"]
+	path = tools/conan/recipe/conan-gtest
+	url = https://github.com/malirod/conan-gtest.git
+[submodule "tools/conan/recipe/conan-log4cplus"]
+	path = tools/conan/recipe/conan-log4cplus
+	url = https://github.com/malirod/conan-log4cplus.git
+[submodule "tools/conan/recipe/conan-boost"]
+	path = tools/conan/recipe/conan-boost
+	url = https://github.com/malirod/conan-boost.git

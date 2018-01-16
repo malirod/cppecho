@@ -1,4 +1,4 @@
-// Copyright [2016] <Malinovsky Rodion>
+// Copyright [2017] <Malinovsky Rodion>
 
 #pragma once
 
@@ -8,27 +8,37 @@
  */
 
 #include <algorithm>
+#include <iterator>
 #include <sstream>
 #include <string>
 #include <type_traits>
 
-namespace cppecho {
+namespace rms {
 namespace util {
 namespace enum_util {
 
 template <typename E>
-constexpr inline auto ToIntegral(E e) noexcept ->
-    typename std::underlying_type<E>::type {
+constexpr inline auto ToIntegral(E e) noexcept -> typename std::underlying_type<E>::type {
   return static_cast<typename std::underlying_type<E>::type>(e);
 }
 
 template <typename E, typename T>
-constexpr inline typename std::enable_if<std::is_enum<E>::value &&
-                                             std::is_integral<T>::value,
-                                         E>::type
-FromIntegral(T value) noexcept {
+constexpr inline typename std::enable_if<std::is_enum<E>::value && std::is_integral<T>::value, E>::type FromIntegral(
+    T value) noexcept {
   return static_cast<E>(value);
 }
+
+  /*
+   * Reason for warning ignore.
+   * In 3.9 clang introduced warning (-Wundefined-var-template) which
+   * prevents main idea of enum util: split enum utils and filling Storage
+   * in enum's cpp file via template specialization.
+   */
+
+#pragma clang diagnostic push
+#if defined(__clang__) and (((__clang_major__ > 3) and (__clang_minor__ >= 9)) or __clang_major__ > 3)
+#pragma clang diagnostic ignored "-Wundefined-var-template"
+#endif
 
 template <typename T>
 struct Storage {
@@ -66,8 +76,7 @@ struct EnumConstRefHolder {
 
 // Actual enum to string conversion
 template <typename T>
-std::ostream& operator<<(std::ostream& stream,
-                         const EnumConstRefHolder<T>& data) {
+std::ostream& operator<<(std::ostream& stream, const EnumConstRefHolder<T>& data) {
   const auto index = ToIntegral(data.enum_value);
   const auto data_size = EnumStrings<T>::data.size;
   if (index >= 0 && index < data_size) {
@@ -116,6 +125,8 @@ const char* EnumToChars(const T& e) {
   return "";
 }
 
+#pragma clang diagnostic pop
+
 template <typename T>
 std::string EnumToString(const T& e) {
   return std::string(EnumToChars<T>(e));
@@ -131,4 +142,4 @@ struct EnumClassHash {
 
 }  // namespace enum_util
 }  // namespace util
-}  // namespace cppecho
+}  // namespace rms

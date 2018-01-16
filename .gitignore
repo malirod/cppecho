@@ -28,7 +28,8 @@
 *.out
 *.app
 
-build/*
+build*/
+cmake-build-*/
 
 *.pyc
 
@@ -39,3 +40,6 @@ build/*
 /debug.log
 
 tags
+.idea/
+
+compile_commands.json

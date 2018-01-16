@@ -78,6 +78,7 @@ std::error_code cppecho::core::EngineLauncher::DoRun() {
   signals.async_wait(
       [&](const boost::system::error_code& error, int signal_number) {
         if (!error) {
+          (void)signal_number;
           LOG_INFO("Termination request received: " << signal_number
                                                     << ". Stopping");
           engine_->Stop();

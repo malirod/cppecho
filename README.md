@@ -1,105 +1,190 @@
-[![Build Status](https://travis-ci.org/malirod/cppecho.svg?branch=master)](https://travis-ci.org/malirod/cppecho)
+[![Build Status](https://travis-ci.org/malirod/flat-async.svg?branch=master)](https://travis-ci.org/malirod/flat-async)
 
-# cppecho
-Echo server in c++
+# Flat-Async
+
+Framework which allows to write async code in flat manner.
+
+Simple echo server included to demonstrate usage.
+
+Inspired and based on:
+
+1. [Asynchronous Programming: Back to the Future](http://kukuruku.co/hub/cpp/asynchronous-programming-back-to-the-future).
+2. [Asynchronous Programming Part 2: Teleportation through Portals](http://kukuruku.co/hub/cpp/asynchronous-programming-part-2-teleportation-through-portals).
 
 ## Platform
 
-Ubuntu 16.04: Clang 3.8, GCC 5.4
+Ubuntu 16.04: Clang 5.0, GCC 5.4, Cmake 3.5, Conan
 
 C++11 Standard is used.
 
+See `tools/Dockerfile-dev-base` for details how to setup development environment
+
 ## Setup
 
-### Install Boost
+Assuming all further commands are executed from project root.
 
-#### Use pre-build Boost lib
+### Initial setup (post clone)
 
-Use the following repository: https://github.com/malirod/boost-bin
+Get sub-modules with the following command
 
-Use appropriate branch. Branch name contains info about used env and options to build Boost.
+`git submodule update --init --recursive`
 
-E.g.
+#### Setup git hook
 
-https://github.com/malirod/boost-bin/tree/boost-1.62-ubuntu-16.04-x64-clang-5.8-release-c++11-static-multi
-
-#### Build Boost manually from sources
-If pre-build version doesn't fit your needs (OS, compiler etc) then build Boost manually.
-
-Download and unzip to some dir (e.g. `~/libs/boost_1_62_0`) latest stable version from [Boost site](http://www.boost.org/).
-
-Go the unzipped directory and run commands
-
-```
-./bootstrap.sh --prefix=./build
-./b2 --toolset=clang cxxflags="-std=c++11" variant=release link=static threading=multi -j$(nproc) install
-
-```
-
-#### Set environment variable
-Set env pointing to the boost install dir (in ~/.profile or ~/.bashrc)
-
-`export BOOST_HOME=~/libs/boost_1_62_0/build`
-
-Restart terminal, or reload config with `source ~/.profile` (`source ~/.bashrc`)
-
-## Setup git hook
-
-Run `python infrastructure/tools/install_hooks.py`
+Run `tools/install_hooks.py`
 
 This will allow to perform some code checks locally before posting changes to server.
 
+### Dependencies
+
+Project uses [Conan Package Manager](https://github.com/conan-io/conan)
+
+Install conan with
+
+`sudo -H pip install conan`
+
+CMake will try to automatially setup dependencies.
+
+To get dependencies manually from remote repository run command in project root
+
+`tools/conan/build.py`
+
+Before calling cmake to generate build files generate cmake files for dependencies (from build dir)
+
+`conan install .. --profile ../tools/conan/profile-clang`
+
+**Hint:** to upload build packages to server use the following commands
+
+```
+conan remote add <REMOTE> https://api.bintray.com/conan/malirod/stable
+conan user -p <APIKEY> -r <REMOTE> <USERNAME>
+conan install . -r <REMOTE>
+conan upload "*" -r <REMOTE> --all
+```
+
 ## Install pylint - python checker
 
-`sudo apt-get install pylint`
-
-## Logger
-
-Project uses log4cplus logger. It's configured as the sub-module located in `thirdparty\log4cplus`. If this directory doesn't exist then `waf configure` will do required preparations.
+`sudo pip install pylint==1.8.0`
 
 ## Build
 
 #### Build commands
-- `build`: debug build
-- `build_all`: release and debug build
-- `build_debug`: debug build
-- `build_release`: release build
 
-Sample. In the project root call
+By default used clang compiler and debug mode.
 
-`./waf configure build_all`
+Run in project root to build debug version with clang
 
-To build specific target use `--targets` option during configuration
+`mkdir build-clang-debug && cd build-clang-debug && cmake .. && make -j$(nproc)`
 
-Sample
+To build release version with gcc run the following command
 
-`./waf configure --targets=testrunner`
-
-List all available targets with `./waf list`
-
-Clang is used by default. Fallback to GCC if Clang not found. To use GCC call
-
-`CXX=g++ ./waf configure`
+`RUN mkdir build-gcc-release && cd build-gcc-release && cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release .. && make -j$(nproc)`
 
 ### Build with sanitizers (clang)
 
-Use the following option for configuration `--sanitize-with`. Applicable to debug build only. Known values are:
-
-- `asan`: address
-- `tsan`: thread
-- `msan`: memory
-- `ubsan`: undefined behaviour
-
-Example
-
-```
-./waf configure --sanitize-with=asan
-./waf build
-ASAN_OPTIONS="detect_leaks=1" ./build/debug/testrunner
-```
+You can enable sanitizers with `SANITIZE_ADDRESS`, `SANITIZE_MEMORY`, `SANITIZE_THREAD` or `SANITIZE_UNDEFINED` options in your CMake configuration. You can do this by passing e.g. `-DSANITIZE_ADDRESS=On` in your command line.
 
 ## Run
 
-Run from project root. It's expected that config is located in the project root.
+Run from build directory
 
-`build/debug/testrunner`
+`ctest`
+
+or
+
+`bin/testrunner`
+
+## Coverage report
+
+To enable coverage support in general, you have to enable `ENABLE_COVERAGE` option in your CMake configuration. You can do this by passing `-DENABLE_COVERAGE=On` on your command line or with your graphical interface.
+
+If coverage is supported by your compiler, the specified targets will be build with coverage support. If your compiler has no coverage capabilities (I assume Intel compiler doesn't) you'll get a warning but CMake will continue processing and coverage will simply just be ignored.
+
+Collect coverage in Debug mode. Tested with gcc 5.0 and clang 5.0 compiler.
+
+### Sample commands to get coverage html report
+
+```
+CXX=g++ cmake -DENABLE_COVERAGE=On -DCMAKE_BUILD_TYPE=Debug ..
+make -j$(nproc)
+make test
+make testrunner-genhtml
+xdg-open lcov/html/testrunner/index.html
+```
+
+## Integration
+
+`Dockerfile-initial` creates build environment from the scratch. It should be built manually and pushed to DockerHub
+
+`Dockerfile-travis` is used by Travis. It's based on pre-built image from `Dockerfile-initial` on DockerHub
+
+### Create docker image
+
+**Dockerfile-dev-base**: base image, which contains basic environment setup (compiler, build tools)
+
+`docker build -t cpp-dev-base -f tools/Dockerfile-dev-base .`
+
+**Dockerfile-initial**: initial project image, which contains pre-build sources. Based on **Dockerfile-dev-base**
+
+`docker build -t travis-build-cpputils -f tools/Dockerfile-initial .`
+
+Steps to prepare image for Travis
+
+```
+docker build -t cpp-dev-base -f tools/Dockerfile-dev-base .
+docker tag cpp-dev-base $DOCKER_ID_USER/cpp-dev-base
+docker build -t travis-build-flat-async -f tools/Dockerfile-initial .
+docker tag travis-build-flat-async $DOCKER_ID_USER/travis-build-flat-async
+docker login
+docker push $DOCKER_ID_USER/cpp-dev-base
+docker push $DOCKER_ID_USER/travis-build-flat-async
+```
+### Clang static analyzer
+
+Sample command to run analyzer. By default report is stored in `/tmp/scan-build*`
+
+```
+mkdir build-debug
+cd build-debug
+scan-build --use-analyzer=/usr/bin/clang++-5.0 cmake ..
+scan-build --use-analyzer=/usr/bin/clang++-5.0 make -j$(nproc)
+```
+
+or
+
+
+```
+cmake ..
+make clang-static-analyzer
+```
+
+### Clang-tidy
+
+Setting are stored in `.clang-tidy`.
+
+Run
+
+```
+mkdir build
+cd build
+cmake ..
+make clang-tidy
+```
+
+### Include-What-You-Use
+
+Setup for CLang 5.0
+
+Prepare IWYU
+
+```
+sudo apt install libncurses5-dev libclang-5.0-dev libz-dev
+git clone https://github.com/include-what-you-use/include-what-you-use.git
+git checkout -b clang_5.0 origin/clang_5.0
+mkdir build && cd build
+cmake -DIWYU_LLVM_ROOT_PATH=/usr/lib/llvm-5.0 -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ..
+make
+sudo make install
+```
+
+Once `include-what-you-use` is available in the `PATH` the one can check project by invoking `make iwyu`.

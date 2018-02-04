@@ -1,0 +1,13 @@
+# Setup Conan
+if (NOT EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        message(STATUS "Setup dependencies with conan (clang)")
+        execute_process(COMMAND conan install ${CMAKE_CURRENT_SOURCE_DIR} --profile ${CMAKE_CURRENT_SOURCE_DIR}/tools/conan/profile-clang --build missing)
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        message(STATUS "Setup dependencies with conan (gcc)")
+        execute_process(COMMAND conan install ${CMAKE_CURRENT_SOURCE_DIR} --profile ${CMAKE_CURRENT_SOURCE_DIR}/tools/conan/profile-gcc --build missing)
+    else()
+        set(CONAN_INSTALL_CMD "conan install .. <list-of-settings>")
+        message(FATAL_ERROR "Dependencies are not configured. Install dependencies first, e.g. running in build dir: ${CONAN_INSTALL_CMD}")
+    endif()
+endif()

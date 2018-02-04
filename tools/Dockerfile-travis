@@ -1,0 +1,3 @@
+FROM malirod/travis-build-flat-async
+
+ADD . $PROJECT_ROOT

@@ -6,12 +6,15 @@ sudo apt-get install libpcre3-dev
 make SRCDIR=build CFGDIR=cfg HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"
 
 changed:
-fixed odd whitespaces in rules with the following commands
-- dos2unix
-- sed -i 's/[ \t]*$//' infrastructure/tools/cppcheck/cfg/std.cfg
-- sed -i 's/[ \t]*$//' infrastructure/tools/cppcheck/cfg/gnu.cfg
-- sed -i 's/[ \t]*$//' infrastructure/tools/cppcheck/cfg/posix.cfg
-- sed -i 's/[ \t]*$//' infrastructure/tools/cppcheck/cfg/windows.cfg
+fixed odd whitespaces in rules with the following commands:
+```
+dos2unix <list of files>
+sed -i 's/[ \t]*$//' tools/cppcheck/cfg/bsd.cfg
+sed -i 's/[ \t]*$//' tools/cppcheck/cfg/cppcheck-cfg.rng
+sed -i 's/[ \t]*$//' tools/cppcheck/cfg/gnu.cfg
+sed -i 's/[ \t]*$//' tools/cppcheck/cfg/posix.cfg
+sed -i 's/[ \t]*$//' tools/cppcheck/cfg/windows.cfg
+```
 
 usage:
 tools/cppcheck/cppcheck --error-exitcode=1 --std=c++11 --std=posix --platform=unix64 --enable=all --inconclusive -Isrc ./src ./test

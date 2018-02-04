@@ -51,7 +51,6 @@ add_coverage(${LIB_NAME})
 
 target_include_directories(${LIB_NAME} PUBLIC src)
 target_compile_options(${LIB_NAME} PRIVATE ${COMMON_CPP_FLAGS})
-
 target_link_libraries(${LIB_NAME} PUBLIC CONAN_PKG::log4cplus CONAN_PKG::Boost CONAN_PKG::fmt)
 
 if (BUILD_TESTING)
@@ -77,12 +76,10 @@ if (BUILD_TESTING)
     add_library(${COMMON_NAMESPACE}::${TEST_LIB_NAME} ALIAS ${TEST_LIB_NAME})
 
     add_sanitizers(${TEST_LIB_NAME})
-
+    list(APPEND LCOV_REMOVE_PATTERNS "'*/test/*'")
     add_coverage(${TEST_LIB_NAME})
 
     target_include_directories(${TEST_LIB_NAME} PUBLIC test)
-
     target_compile_options(${TEST_LIB_NAME} PRIVATE ${COMMON_CPP_FLAGS})
-
     target_link_libraries(${TEST_LIB_NAME} PUBLIC ${COMMON_NAMESPACE}::${LIB_NAME} CONAN_PKG::gtest)
 endif()

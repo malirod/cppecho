@@ -12,6 +12,10 @@ const unsigned int kMajor = 1;
 const unsigned int kMinor = 0;
 const unsigned int kPatch = 0;
 
+/**
+ * Get current lib version.
+ * @return version as string
+ */
 std::string GetVersion();
 
 }  // namespace version

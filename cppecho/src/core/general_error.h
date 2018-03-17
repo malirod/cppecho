@@ -8,6 +8,9 @@
 namespace rms {
 namespace core {
 
+/**
+ * Enum which describes general Engine errors.
+ */
 enum class GeneralError {
   Success,
   InternalError,
@@ -15,12 +18,28 @@ enum class GeneralError {
   StartupFailed,
 };
 
+/**
+ * Error category for general errors. Required be std::error_code facility.
+ */
 class ErrorCategory : public std::error_category {
  public:
+  /**
+   * Gets category name.
+   * @return Name of the category.
+   */
   const char* name() const noexcept override;
 
+  /**
+   * Convert error code to corresponding message string.
+   * @param error_value Error code
+   * @return Error massage
+   */
   std::string message(int error_value) const override;
 
+  /**
+   * Allows to get access to single instance of this category.
+   * @return This Category.
+   */
   static const std::error_category& get();
 
  protected:

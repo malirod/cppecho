@@ -77,7 +77,7 @@ std::pair<rms::net::BufferType, rms::net::ErrorType> rms::net::TcpSocket::ReadPa
   return std::make_pair(buffer, error);
 }
 
-rms::net::BufferType rms::net::TcpSocket::ReadUntil(const std::string& delimeter) {
+rms::net::BufferType rms::net::TcpSocket::ReadUntil(const std::string& delimiter) {
   auto self = shared_from_this();
   boost::asio::streambuf buffer;
 
@@ -87,7 +87,7 @@ rms::net::BufferType rms::net::TcpSocket::ReadUntil(const std::string& delimeter
   }
 
   DeferIo([&, self](IoHandlerType proceed) {
-    boost::asio::async_read_until(socket_, buffer, delimeter, BufferIoHandler(std::move(proceed)));
+    boost::asio::async_read_until(socket_, buffer, delimiter, BufferIoHandler(std::move(proceed)));
   });
 
   if (!socket_.is_open() && !stopped_) {
@@ -202,14 +202,13 @@ void rms::net::TcpSocket::Start() {
         (error == boost::asio::error::operation_aborted)) {
       LOG_DEBUG("[" << GetId() << "] Start: disconnected");
 
-      // RunAsync([&, self]() { on_disconnected_(*this); }, scheduler_);
       if (!stopped_) {
         LOG_DEBUG("[" << GetId() << "] Start: disconnected");
         on_disconnected_(*this);
       } else {
         LOG_DEBUG("[" << GetId()
                       << "] Start: disconnected. Skip disconnection "
-                         "event, elready stopped.");
+                         "event, already stopped.");
       }
       return;
     }
@@ -218,13 +217,11 @@ void rms::net::TcpSocket::Start() {
       LOG_DEBUG("[" << GetId() << "] Start error: " << error.value() << ", message: " << error.message());
       Stop();
 
-      // RunAsync([&, self]() { on_disconnected_(*this); }, scheduler_);
-
       if (!stopped_) {
         on_disconnected_(*this);
 
       } else {
-        LOG_DEBUG("[" << GetId() << "] Start: skip disconnection event, elready stopped.");
+        LOG_DEBUG("[" << GetId() << "] Start: skip disconnection event, already stopped.");
       }
 
       return;

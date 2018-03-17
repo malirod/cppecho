@@ -22,28 +22,71 @@ namespace core {
 class IScheduler;
 class IIoService;
 
+/**
+ * Run operation asynchronously
+ * @param handler Operation to run. Any callable.
+ * @param scheduler Context where operation should run.
+ * @return Operation status which allows to cancel operation
+ */
 AsyncOpState RunAsync(HandlerType handler, IScheduler& scheduler);
 
+/**
+ * Run operation asynchronously using default scheduler assigned to current thread.
+ * @param handler Operation to run. Any callable.
+ * @return Operation status which allows to cancel operation
+ */
 AsyncOpState RunAsync(HandlerType handler);
 
+/**
+ * Run operation asynchronously n times sequentally one by one using default scheduler assigned to current thread.
+ * @param n Exectution count. Must be grate that 0.
+ * @param handler Operation to run. Any callable.
+ */
 void RunAsyncTimes(int32_t n, HandlerType handler);
 
+/**
+ * Switch current execution contect to the new one. Must be called within async operation.
+ * @param scheduler New context to swtich to.
+ */
 void SwitchTo(IScheduler& scheduler);
 
-int GetCurrentThreadContextSwitcherIndex();
-
+/**
+ * Get scheduler attached to current thread. Gets information from current AsyncRunner. Assert if no runner is
+ * attheched.
+ * @return Ref to scheduler attchaed to current thread.
+ */
 IScheduler& GetCurrentThreadScheduler();
 
+/**
+ * Get ioservice attached to current thread. Gets information from current AsyncRunner. Assert if no runner is
+ * attheched.
+ * @return Ref to ioservice attchaed to current thread.
+ */
 IIoService& GetCurrentThreadIoService();
 
+/**
+ * Process pending event in AsyncRunner attached to current thread.
+ */
 void HandleEvents();
 
+/**
+ * Disable events processing by AsyncRunner attached to current thread.
+ */
 void DisableEvents();
 
+/**
+ * Enable events processing by AsyncRunner attached to current thread.
+ */
 void EnableEvents();
 
+/**
+ * Block current thread until all async tasks attached to this thread will finish.
+ */
 void WaitAll();
 
+/**
+ * Scope guard for async event. In ctor disables events and automatically enables events on exit.
+ */
 class AsyncOpStateGuard {
  public:
   AsyncOpStateGuard();
@@ -51,20 +94,44 @@ class AsyncOpStateGuard {
   ~AsyncOpStateGuard();
 };
 
+/**
+ * Schedule to execute operation after current async task will be finished. Building block for writing continuation.
+ * Yields execution.
+ * @param handler Operation to execute after current async task will be finished.
+ */
 void Defer(HandlerType handler);
 
 using ProceedHandlerType = std::function<void(HandlerType)>;
+/**
+ * Wraps Defer to execute continuation after current async task is done.
+ * @param proceed Operation to execute after current async task will be finished.
+ */
 void DeferProceed(ProceedHandlerType proceed);
 
+/**
+ * Runs the list of async tasks and waits until all of them will be finished.
+ * @param handlers List of async tasks.
+ */
 void RunAsyncWait(std::initializer_list<HandlerType> handlers);
 
+/**
+ * Helper class which allows to run async task and wait when required until task is finished.
+ */
 class Waiter {
  public:
   Waiter();
   ~Waiter();
 
+  /**
+   * Run async task and return ref to self to allow wait for result later.
+   * @param handler Async task to run.
+   * @return Ref to self to allow to wait fo result.
+   */
   Waiter& RunAsync(HandlerType handler);
 
+  /**
+   * Blocks execution until assigned assync task is finished.
+   */
   void Wait();
 
  private:
@@ -77,8 +144,19 @@ class Waiter {
   std::shared_ptr<Waiter> proceeder_;
 };
 
+/**
+ * Runs the list of async operations, waits and returns the index of the fist finished operation.
+ * @param handlers
+ * @return Index of the fist finished async operation.
+ */
 std::size_t RunAsyncAnyWait(std::initializer_list<HandlerType> handlers);
 
+/**
+ * Runs the list of async operations, waits and returns result of the first finished operation.
+ * @tparam T Type of the result
+ * @param handlers List os async operations
+ * @return Returns result of fist finished operation. Results of other operations are not waited.
+ */
 template <typename T>
 boost::optional<T> RunAsyncAnyResult(std::initializer_list<std::function<boost::optional<T>()>> handlers) {
   using ResultType = boost::optional<T>;
@@ -119,6 +197,9 @@ boost::optional<T> RunAsyncAnyResult(std::initializer_list<std::function<boost::
   return result;
 }
 
+/**
+ * Allows to specify timeout for async operation in which it was created.
+ */
 class Timeout {
  public:
   explicit Timeout(int ms);

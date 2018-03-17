@@ -190,3 +190,7 @@ sudo make install
 ```
 
 Once `include-what-you-use` is available in the `PATH` the one can check project by invoking `make iwyu`.
+
+### Documentation
+
+Code contains doxygen. To generate html documentation run command `make doc`. Output will be in `<build dir>\doc\html`

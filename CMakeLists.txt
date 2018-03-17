@@ -6,7 +6,7 @@ include(PreferCcache)
 include(DefaultDebug)
 include(PreferGoldLinker)
 
-project(cpputils VERSION 1.0 LANGUAGES CXX)
+project(flatasync VERSION 1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -44,8 +44,9 @@ if (BUILD_TESTING)
     add_test(NAME all COMMAND testrunner)
 endif()
 
-include(cmake/cmake-common-utils/ClangTidy.cmake)
-include(cmake/cmake-common-utils/IWYU.cmake)
+include(ClangTidy)
+include(IWYU)
+include(PrepareDoxygen)
 
 # Setup clang static analyzer
 add_custom_target(clang-static-analyzer

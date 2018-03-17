@@ -21,36 +21,91 @@ class IScheduler;
 namespace rms {
 namespace core {
 
+/**
+ * Class which encapsulates work with async tasks bound to thread context.
+ */
 class AsyncRunner {
  public:
+  /**
+   * Destroys runner.
+   */
   ~AsyncRunner();
 
+  /**
+   * Schedule execution of the continuation.
+   */
   void Proceed();
 
+  /**
+   * Return handler which allows to schedule continuation.
+   * @return Callable which schedules continuation.
+   */
   HandlerType ProceedHandler();
 
+  /**
+   * Schedule to execute operation after current async task will be finished. Building block for writing continuation.
+   * Yields execution.
+   * @param handler Operation to execute after current async task will be finished.
+   */
   void Defer(HandlerType handler);
 
+  /**
+   * Wraps Defer to execute continuation after current async task is done.
+   * @param proceed Operation to execute after current async task will be finished.
+   */
   void DeferProceed(ProceedHandlerType proceed);
 
+  /**
+   * Switch execution context (scheduler) of the async operation to the new one. Schedule continuation to be executed
+   * within new context.
+   * @param dst New execution context of the async task.
+   */
   void SwitchTo(IScheduler& dst);
 
+  /**
+   * Process async op state (Cancel, Timedout) and break execution if required.
+   */
   void HandleEvents() const;
 
+  /**
+   * Disable events (Cancel, Timedout) processing.
+   */
   void DisableEvents();
 
+  /**
+   * Enable events (Cancel, Timedout) processing and trigger events processing.
+   */
   void EnableEvents();
 
+  /**
+   * Get scheduler of the async runner.
+   * @return Reference to scheduler of this async runner.
+   */
   IScheduler& GetScheduler();
 
+  /**
+   * Get asio io service of the async runner.
+   * @return Reference to asio io service of this async runner.
+   */
   IIoService& GetIoService();
 
-  int GetIndex() const;
-
+  /**
+   * Get OpState of the async runner.
+   * @return OpState of this async runner.
+   */
   AsyncOpState GetOpState() const;
 
+  /**
+   * Factory method which creates AsyncRunner with specified handler and scheduler.
+   * @param handler Async operation to be executed.
+   * @param scheduler Scheduler which will process async operation.
+   * @return Async operation state which allows to control exection flow (Cancel, Timedout)
+   */
   static AsyncOpState Create(HandlerType handler, IScheduler& scheduler);
 
+  /**
+   * Blocks current execution and waits until all async tasks will be finished.
+   */
   static void WaitAll();
 
  private:
@@ -101,13 +156,22 @@ class AsyncRunner {
 
   CoroHelper coro_helper_;
 
-  const int index_;
-
+  /**
+   * Used track async ops creation \ deletion
+   */
   const int count_;
 };
 
+/**
+ * Check whether current thread has AsyncRunner attached so async facility can be used.
+ * @return True if current thread has AsyncRunner attached. False otherwise.
+ */
 bool IsCurrentThreadHasAsyncRunner();
 
+/**
+ * Return ref to runner assinged to current thread. Assert if no AsyncRunnner is attached.
+ * @return AsyncRunner attached to current thread.
+ */
 AsyncRunner& GetCurrentThreadAsyncRunner();
 
 }  // namespace core

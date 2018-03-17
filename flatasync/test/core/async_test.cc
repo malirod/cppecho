@@ -18,6 +18,7 @@ using rms::core::GetDefaultSchedulerAccessorInstance;
 using rms::core::GetTimeoutServiceAccessorInstance;
 using rms::core::HandleEvents;
 using rms::core::RunAsync;
+using rms::core::RunAsyncTimes;
 using rms::core::SequentialScheduler;
 using rms::core::ThreadPool;
 using rms::core::Timeout;
@@ -53,6 +54,28 @@ TEST(TestAsync, RunAsyncOnce) {
 
   WaitAll();
   ASSERT_EQ(1, counter);
+}
+
+TEST(TestAsync, RunAsyncNTimes) {
+  ThreadPool thread_pool_main{1u, "main"};
+  GetDefaultSchedulerAccessorInstance().Attach(thread_pool_main);
+  const auto main_thread_name = thread_pool_main.GetName();
+
+  std::atomic<int> counter{0};
+  boost::barrier barrier{2};
+  const int32_t times = 3;
+
+  RunAsyncTimes(times, [&]() {
+    ASSERT_EQ(main_thread_name, ThreadUtil::GetCurrentThreadName());
+    ++counter;
+    if (counter == times) {
+      barrier.wait();
+    }
+  });
+  ASSERT_EQ(0, counter);
+  barrier.wait();
+  WaitAll();
+  ASSERT_EQ(3, counter);
 }
 
 TEST(TestAsync, RunAsyncAndSwitch) {

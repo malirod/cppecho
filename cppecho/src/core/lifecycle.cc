@@ -12,6 +12,12 @@
 
 DECLARE_GLOBAL_GET_LOGGER("Main")
 
+/**
+ * Main entry point of the application.
+ * @param argc Count of command line arguments.
+ * @param argv Command line arguments.
+ * @return Error code.
+ */
 int main(int argc, char** argv) {
   using rms::core::EngineLauncher;
   using rms::core::GeneralError;

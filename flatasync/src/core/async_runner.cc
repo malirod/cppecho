@@ -15,24 +15,20 @@ namespace {
 
 thread_local rms::core::AsyncRunner* thrd_ptr_async_runner = nullptr;
 
-class RunnerIndexTag;
 class RunnerCountTag;
 
 }  // namespace
 
 rms::core::AsyncRunner::AsyncRunner(IScheduler& scheduler)
-    : is_events_allowed_(true)
-    , scheduler_(&scheduler)
-    , index_(++util::GetAtomicInstance<RunnerIndexTag>())
-    , count_(++util::GetAtomicInstance<RunnerCountTag>()) {
+    : is_events_allowed_(true), scheduler_(&scheduler), count_(++util::GetAtomicInstance<RunnerCountTag>()) {
   LOG_AUTO_TRACE();
-  LOG_DEBUG("Created runner with index=" << index_ << ", count=" << count_);
+  LOG_DEBUG("Created runner. Count=" << count_);
 }
 
 rms::core::AsyncRunner::~AsyncRunner() {
   LOG_AUTO_TRACE();
   const auto count = --util::GetAtomicInstance<RunnerCountTag>();
-  LOG_DEBUG("Destroying runner with index=" << index_ << ". count=" << count);
+  LOG_DEBUG("Destroying runner. Count=" << count);
 }
 
 void rms::core::AsyncRunner::Proceed() {
@@ -108,10 +104,6 @@ rms::core::IScheduler& rms::core::AsyncRunner::GetScheduler() {
 
 rms::core::IIoService& rms::core::AsyncRunner::GetIoService() {
   return util::ThreadUtil::GetCurrentThreadIoSerivce();
-}
-
-int rms::core::AsyncRunner::GetIndex() const {
-  return index_;
 }
 
 rms::core::AsyncOpState rms::core::AsyncRunner::GetOpState() const {

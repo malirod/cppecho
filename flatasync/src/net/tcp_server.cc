@@ -273,7 +273,7 @@ boost::optional<std::pair<BufferType, ErrorType>> rms::net::TcpServer::ReadParti
   return socket->ReadPartial();
 }
 
-boost::optional<BufferType> rms::net::TcpServer::ReadUntil(TcpServerIdType id, const std::string& delimeter) {
+boost::optional<BufferType> rms::net::TcpServer::ReadUntil(TcpServerIdType id, const std::string& delimiter) {
   LOG_AUTO_TRACE();
   auto socket = GetSocket(id);
 
@@ -281,7 +281,7 @@ boost::optional<BufferType> rms::net::TcpServer::ReadUntil(TcpServerIdType id, c
     return boost::none;
   }
 
-  return socket->ReadUntil(delimeter);
+  return socket->ReadUntil(delimiter);
 }
 
 void rms::net::TcpServer::Write(TcpServerIdType id, const BufferType& buffer) {

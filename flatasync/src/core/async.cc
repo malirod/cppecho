@@ -44,10 +44,6 @@ void rms::core::SwitchTo(IScheduler& scheduler) {
   GetCurrentThreadAsyncRunner().SwitchTo(scheduler);
 }
 
-int rms::core::GetCurrentThreadContextSwitcherIndex() {
-  return GetCurrentThreadAsyncRunner().GetIndex();
-}
-
 void rms::core::HandleEvents() {
   GetCurrentThreadAsyncRunner().HandleEvents();
 }

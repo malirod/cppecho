@@ -63,6 +63,7 @@ if (BUILD_TESTING)
         "test/core/coroutine_test.cc"
         "test/core/helper.cc"
         "test/core/helper.h"
+        "test/net/resolver_test.cc"
         "test/net/tcp_server_test.cc"
         "test/net/tcp_socket_test.cc"
         "test/util/enum_util_test.cc"

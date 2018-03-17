@@ -16,22 +16,48 @@
 namespace rms {
 namespace core {
 
+/**
+ * Allows to create and manipulate thread pools.
+ */
 class ThreadPool : public IScheduler, public IIoService {
  public:
+  /**
+   * Creates thread pool with given name and count of threads.
+   * @param thread_count Count of threads in the pool.
+   * @param name Thread pull name.
+   */
   ThreadPool(const std::size_t thread_count, const char* name);
 
+  /**
+   * Destroy thread pool, stopp all threads and wait until they are done.
+   */
   ~ThreadPool();
 
   ThreadPool(const ThreadPool&) = delete;
   ThreadPool& operator=(const ThreadPool&) = delete;
 
+  /**
+   * Schedule the task to be executed on random thread in thread pool.
+   * @param handler Task to be executed in thread pool.
+   */
   void Schedule(HandlerType handler) override;
 
+  /**
+   * Wait until thread pool is done.
+   */
   void Wait();
 
+  /**
+   * Get thread pool name.
+   * @return Name of the thread pool.
+   */
   const char* GetName() const override;
 
  private:
+  /**
+   * Get underlying asio io service.
+   * @return Asio io service which executes all tasks.
+   */
   AsioServiceType& GetAsioService() override;
 
   const char* name_;

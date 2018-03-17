@@ -8,9 +8,19 @@
 namespace rms {
 namespace util {
 
+/**
+ * Trait which allows to get callable result type.
+ * @tparam T Callable to get info from.
+ */
 template <typename T>
 struct FunctionTraits : public FunctionTraits<decltype(&T::operator())> {};
 
+/**
+ * Trait which allows to get callable result type and args count.
+ * @tparam ClassType Callable to get info from.
+ * @tparam ReturnType Return type.
+ * @tparam Args Passed variadic arguments.
+ */
 template <typename ClassType, typename ReturnType, typename... Args>
 struct FunctionTraits<ReturnType (ClassType::*)(Args...) const> {
   typedef ReturnType resultType;

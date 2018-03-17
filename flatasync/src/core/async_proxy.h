@@ -14,10 +14,20 @@ class IScheduler;
 namespace rms {
 namespace core {
 
+/**
+ * RAII helper which switch to destination scheduler in ctor and switch back to current scheduler in dtor.
+ */
 class AsyncProxyBase {
  public:
+  /**
+   * Switch to another scheduler and holds reference to current scheduler.
+   * @param destination New scheduler to switch to.
+   */
   explicit AsyncProxyBase(IScheduler& destination);
 
+  /**
+   * Switch back to original scheduler
+   */
   ~AsyncProxyBase();
 
  private:
@@ -26,6 +36,10 @@ class AsyncProxyBase {
   IScheduler& source;
 };
 
+/**
+ * Allows to run methods of a class in specific scheduler. Destination scheduler should be specified via Attach.
+ * @tparam T Class to wrap with async calls.
+ */
 template <typename T>
 class WithAsyncProxy : public util::SingleAccessor<IScheduler> {
  public:
@@ -41,6 +55,11 @@ class WithAsyncProxy : public util::SingleAccessor<IScheduler> {
   }
 };
 
+/**
+ * Factory to create async proxy helper. All
+ * @tparam T Class to wrap with async calls. Allows to run methods of a class in specific scheduler.
+ * @return Async proxy wrapper.
+ */
 template <typename T>
 WithAsyncProxy<T>& AsyncProxy() {
   return util::single<WithAsyncProxy<T>>();

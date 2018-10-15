@@ -1,4 +1,2 @@
-unmatchedSuppression:flatasync/src/util/enum_util.h
-unmatchedSuppression:flatasync/src/net/tcp_server.h
-functionConst:flatasync/src/net/tcp_server.h
 passedByValue
+unmatchedSuppression:src/util/enum_util.h

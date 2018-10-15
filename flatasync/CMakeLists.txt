@@ -51,7 +51,7 @@ add_coverage(${LIB_NAME})
 
 target_include_directories(${LIB_NAME} PUBLIC src)
 target_compile_options(${LIB_NAME} PRIVATE ${COMMON_CPP_FLAGS})
-target_link_libraries(${LIB_NAME} PUBLIC CONAN_PKG::log4cplus CONAN_PKG::Boost CONAN_PKG::fmt)
+target_link_libraries(${LIB_NAME} PUBLIC CONAN_PKG::log4cplus CONAN_PKG::boost CONAN_PKG::fmt)
 
 if (BUILD_TESTING)
     set(TEST_LIB_NAME "test${LIB_NAME}")

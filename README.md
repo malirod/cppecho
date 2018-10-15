@@ -1,6 +1,6 @@
-[![Build Status](https://travis-ci.org/malirod/flat-async.svg?branch=master)](https://travis-ci.org/malirod/flat-async)
-
 # Flat-Async
+
+[![Build Status](https://travis-ci.org/malirod/flat-async.svg?branch=master)](https://travis-ci.org/malirod/flat-async)
 
 Framework which allows to write async code in flat manner.
 
@@ -13,9 +13,9 @@ Inspired and based on:
 
 ## Platform
 
-Ubuntu 16.04: Clang 5.0, GCC 5.4, Cmake 3.5, Conan
+Ubuntu 18.04: Clang 7.0, GCC 7.3.0, Cmake 3.10, Conan
 
-C++11 Standard is used.
+C++14 Standard is used.
 
 See `tools/Dockerfile-dev-base` for details how to setup development environment
 
@@ -43,19 +43,25 @@ Install conan with
 
 `sudo -H pip install conan`
 
-CMake will try to automatially setup dependencies.
+CMake will try to automatically setup dependencies.
 
-To get dependencies manually from remote repository run command in project root
+Add additional repositories to conan:
 
-`tools/conan/build.py`
+- `conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan`
 
-Before calling cmake to generate build files generate cmake files for dependencies (from build dir)
+Cmake will automatically check required dependencies and setup them taking into account current compiler (clang or gcc).
 
-`conan install .. --profile ../tools/conan/profile-clang`
+Dependencies can be setup using custom profile with following command (run from build dir)
+
+`conan install .. <settings> --build missing`
+
+e.g.
+
+`conan install .. -s arch=x86_64 -s os=Linux -s compiler=clang -s compiler.version=7.0 -s compiler.libcxx=libstdc++11 -s build_type=Release -e CXX=clang++ -e CC=clang  --build missing`
 
 **Hint:** to upload build packages to server use the following commands
 
-```
+```bash
 conan remote add <REMOTE> https://api.bintray.com/conan/malirod/stable
 conan user -p <APIKEY> -r <REMOTE> <USERNAME>
 conan install . -r <REMOTE>
@@ -64,11 +70,15 @@ conan upload "*" -r <REMOTE> --all
 
 ## Install pylint - python checker
 
-`sudo pip install pylint==1.8.0`
+`sudo pip install pylint`
+
+## Install doxygen
+
+`sudo apt install -y doxygen graphviz`
 
 ## Build
 
-#### Build commands
+### Build commands
 
 By default used clang compiler and debug mode.
 
@@ -104,7 +114,7 @@ Collect coverage in Debug mode. Tested with gcc 5.0 and clang 5.0 compiler.
 
 ### Sample commands to get coverage html report
 
-```
+```bash
 CXX=g++ cmake -DENABLE_COVERAGE=On -DCMAKE_BUILD_TYPE=Debug ..
 make -j$(nproc)
 make test
@@ -132,7 +142,7 @@ xdg-open lcov/html/selected_targets/index.html
 
 Steps to prepare image for Travis
 
-```
+```bash
 docker build -t cpp-dev-base -f tools/Dockerfile-dev-base .
 docker tag cpp-dev-base $DOCKER_ID_USER/cpp-dev-base
 docker build -t travis-build-flat-async -f tools/Dockerfile-initial .
@@ -141,21 +151,21 @@ docker login
 docker push $DOCKER_ID_USER/cpp-dev-base
 docker push $DOCKER_ID_USER/travis-build-flat-async
 ```
+
 ### Clang static analyzer
 
 Sample command to run analyzer. By default report is stored in `/tmp/scan-build*`
 
-```
+```bash
 mkdir build-debug
 cd build-debug
-scan-build --use-analyzer=/usr/bin/clang++-5.0 cmake ..
-scan-build --use-analyzer=/usr/bin/clang++-5.0 make -j$(nproc)
+scan-build --use-analyzer=/usr/bin/clang++ cmake ..
+scan-build --use-analyzer=/usr/bin/clang++ make -j$(nproc)
 ```
 
 or
 
-
-```
+```bash
 cmake ..
 make clang-static-analyzer
 ```
@@ -166,30 +176,12 @@ Setting are stored in `.clang-tidy`.
 
 Run
 
-```
+```bash
 mkdir build
 cd build
 cmake ..
 make clang-tidy
 ```
-
-### Include-What-You-Use
-
-Setup for CLang 5.0
-
-Prepare IWYU
-
-```
-sudo apt install libncurses5-dev libclang-5.0-dev libz-dev
-git clone https://github.com/include-what-you-use/include-what-you-use.git
-git checkout -b clang_5.0 origin/clang_5.0
-mkdir build && cd build
-cmake -DIWYU_LLVM_ROOT_PATH=/usr/lib/llvm-5.0 -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ..
-make
-sudo make install
-```
-
-Once `include-what-you-use` is available in the `PATH` the one can check project by invoking `make iwyu`.
 
 ### Documentation
 

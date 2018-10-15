@@ -44,3 +44,6 @@ tags
 
 .ycm_extra_conf.py
 compile_commands.json
+
+.vscode
+test_detail.xml

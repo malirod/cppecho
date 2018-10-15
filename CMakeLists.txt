@@ -21,7 +21,7 @@ conan_basic_setup(TARGETS)
 
 include(CTest)
 
-# Add possibility to sinitize code
+# Add possibility to sanitize code
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/sanitizers-cmake/cmake")
 find_package(Sanitizers REQUIRED)
 
@@ -45,7 +45,6 @@ if (BUILD_TESTING)
 endif()
 
 include(ClangTidy)
-include(IWYU)
 include(PrepareDoxygen)
 
 # Setup clang static analyzer
@@ -54,6 +53,6 @@ add_custom_target(clang-static-analyzer
     VERBATIM)
 
 # Copy default config to the output dir
-# Manual run of the executable is expected fron build dir diectly
+# Manual run of the executable is expected from build dir directly
 # bin/testrunner
 configure_file(config/logger.cfg logger.cfg COPYONLY)

@@ -1,6 +1,6 @@
 # Setup clang-tidy target
-find_program(CLANG_TIDY_EXE NAMES "clang-tidy-5.0" PATHS /usr/bin)
-find_program(RUN_CLANG_TIDY_EXE NAMES "run-clang-tidy.py" PATHS /usr/lib/llvm-5.0/share/clang)
+find_program(CLANG_TIDY_EXE NAMES "clang-tidy" PATHS /usr/bin)
+find_program(RUN_CLANG_TIDY_EXE NAMES "run-clang-tidy.py" PATHS /usr/lib/llvm-7/share/clang)
 
 if (NOT CLANG_TIDY_EXE)
     message(WARNING "clang-tidy not found!")

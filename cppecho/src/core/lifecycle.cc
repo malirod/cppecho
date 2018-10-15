@@ -40,9 +40,9 @@ int main(int argc, char** argv) {
     LOG_INFO("Cppecho has finished with exit code '" << error_code.message() << "'");
     return error_code.value();
   } catch (std::exception& e) {
-    LOG_FATAL("Exception has occured: " << e.what());
+    LOG_FATAL("Exception has occurred: " << e.what());
   } catch (...) {
-    LOG_FATAL("Unknown exception has occured");
+    LOG_FATAL("Unknown exception has occurred");
   }
 
   const auto error_code = make_error_condition(GeneralError::InternalError);

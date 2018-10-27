@@ -7,13 +7,11 @@ ADD . $PROJECT_ROOT
 
 WORKDIR $PROJECT_ROOT
 
-# Setup dependencies
-# Use private repository only to speed up setup and aviod build of packs from public repositories
-RUN conan remote remove conan-center
-RUN conan remote remove conan-transit
-RUN tools/conan/build.py
+RUN conan config install ./tools/conan/cfg
 
-RUN mkdir build-clang-debug
-RUN mkdir build-clang-release
-RUN mkdir build-gcc-debug
-RUN mkdir build-gcc-release
+# Pre-build all dependencies and cache them (they are release so just debug build with different compilers is sufficient)
+RUN CXX=g++-8 CC=gcc-8 cmake -H. -Bbuild-gcc-debug -DCMAKE_BUILD_TYPE=Debug
+RUN CXX=clang++-7 CC=clang-7 cmake -H. -Bbuild-clang-debug -DCMAKE_BUILD_TYPE=Debug
+
+# Clean up all possible build dirs
+RUN find . -maxdepth 1 -name "build*" -type d -exec rm -r {} +

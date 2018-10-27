@@ -15,7 +15,7 @@ namespace core {
 enum class AsyncOpStatus { Normal, Cancelled, Timedout };
 
 /**
- * Exception used to break exection of the async operation.
+ * Exception used to break exception of the async operation.
  */
 class AsyncOpStatusException : public std::runtime_error {
  public:
@@ -70,8 +70,7 @@ class AsyncOpState {
   DECLARE_GET_LOGGER("Core.Async.AsyncOpState")
 
   struct State {
-    State() : status(AsyncOpStatus::Normal) {}
-    AsyncOpStatus status;
+    AsyncOpStatus status = AsyncOpStatus::Normal;
   };
 
   bool SetStatus(AsyncOpStatus status);

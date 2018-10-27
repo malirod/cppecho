@@ -21,7 +21,7 @@ rms::net::NetworkIoSchedulerAccessor& rms::net::GetNetworkSchedulerAccessorInsta
 
 rms::net::ErrorType rms::net::DeferIo(CallbackIoHandlerType callback) {
   ErrorType error;
-  rms::core::DeferProceed([ callback = std::move(callback), &error ](rms::core::HandlerType proceed) {
+  rms::core::DeferProceed([callback = std::move(callback), &error](rms::core::HandlerType proceed) {
     callback([proceed, &error](const ErrorType& e) {
       error = e;
       proceed();
@@ -31,7 +31,7 @@ rms::net::ErrorType rms::net::DeferIo(CallbackIoHandlerType callback) {
 }
 
 rms::net::BufferIoHandlerType rms::net::BufferIoHandler(BufferType& buffer, IoHandlerType proceed) {
-  return [&buffer, proceed = std::move(proceed) ](const ErrorType& error, std::size_t size) {
+  return [&buffer, proceed = std::move(proceed)](const ErrorType& error, std::size_t size) {
     if (!error) {
       buffer.resize(size);
     }
@@ -40,9 +40,7 @@ rms::net::BufferIoHandlerType rms::net::BufferIoHandler(BufferType& buffer, IoHa
 }
 
 rms::net::BufferIoHandlerType rms::net::BufferIoHandler(IoHandlerType proceed) {
-  return [proceed = std::move(proceed)](const ErrorType& error, std::size_t) {
-    proceed(error);
-  };
+  return [proceed = std::move(proceed)](const ErrorType& error, std::size_t) { proceed(error); };
 }
 
 rms::net::BufferType rms::net::ToBuffer(const boost::asio::streambuf& streambuf) {

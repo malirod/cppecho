@@ -31,7 +31,7 @@ Guard::~Guard() {
   thrd_ptr_coro_helper = nullptr;
 }
 
-struct CoroInterruptedOnYield {};
+class CoroInterruptedOnYield : public std::exception {};
 
 }  // namespace
 
@@ -69,14 +69,14 @@ void rms::core::CoroHelper::Yield() {
     (*ptr_yield_)();
     LOG_TRACE("After actual yield");
     // Yield has finished. There are two options:
-    // 1. Pointer is still valid and we just continue exection of co-routine
+    // 1. Pointer is still valid and we just continue execution of co-routine
     // handler
     // 2. We're destroying co-routine thus we must interrupt handler
-    // cppcheck doesn't "understand", that there was an aync call, thus here is
+    // cppcheck doesn't "understand", that there was an async call, thus here is
     // no warning (if exist add : cppcheck-suppress oppositeInnerCondition)
     if (ptr_yield_ == nullptr) {
       LOG_TRACE("Interrupting coroutine");
-      throw CoroInterruptedOnYield{};
+      throw CoroInterruptedOnYield();
     }
   }
 }

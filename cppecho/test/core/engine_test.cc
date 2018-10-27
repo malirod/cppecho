@@ -3,9 +3,11 @@
 #include "core/engine.h"
 #include <gtest/gtest.h>
 #include "core/async.h"
+#include "core/default_scheduler_accessor.h"
 #include "core/engine_config.h"
-#include "core/helper.h"
+#include "core/thread_pool.h"
 #include "net/tcp_socket.h"
+#include "net/util.h"
 #include "util/logger.h"
 
 #include <algorithm>
@@ -19,9 +21,13 @@ namespace {
 
 using rms::core::Engine;
 using rms::core::EngineConfig;
-using rms::core::SchedulersInitiator;
+using rms::core::GetDefaultIoServiceAccessorInstance;
+using rms::core::GetDefaultSchedulerAccessorInstance;
+using rms::core::ThreadPool;
 using rms::core::WaitAll;
 using rms::net::BufferType;
+using rms::net::GetNetworkSchedulerAccessorInstance;
+using rms::net::GetNetworkServiceAccessorInstance;
 using rms::net::TcpSocket;
 
 const char SERVER_ADDRESS[] = "127.0.0.1";
@@ -35,7 +41,18 @@ const char GREETING[] = "Hello World!!!\n";
 TEST(TestEngine, EngineEchoTest) {
   LOG_AUTO_TRACE();
 
-  auto schedulers_initiator = std::make_unique<SchedulersInitiator>();
+  const auto hardware_threads_count = std::thread::hardware_concurrency();
+  const int thread_pool_size = hardware_threads_count * 2;
+
+  ThreadPool thread_pool_net(thread_pool_size, "net");
+  ThreadPool thread_pool_main(thread_pool_size, "main");
+
+  GetDefaultIoServiceAccessorInstance().Attach(thread_pool_main);
+  GetDefaultSchedulerAccessorInstance().Attach(thread_pool_main);
+
+  GetNetworkServiceAccessorInstance().Attach(thread_pool_net);
+  GetNetworkSchedulerAccessorInstance().Attach(thread_pool_net);
+
   std::atomic_int execution_step{0};
 
   auto engine_config = std::make_unique<EngineConfig>();

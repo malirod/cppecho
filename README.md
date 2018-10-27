@@ -13,7 +13,7 @@ Inspired and based on:
 
 ## Platform
 
-Ubuntu 18.04: Clang 7.0, GCC 7.3.0, Cmake 3.10, Conan
+Ubuntu 18.10: Clang 7.0, GCC 8.2, Cmake 3.12, Conan
 
 C++14 Standard is used.
 
@@ -47,26 +47,13 @@ CMake will try to automatically setup dependencies.
 
 Add additional repositories to conan:
 
-- `conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan`
+`conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan`
 
 Cmake will automatically check required dependencies and setup them taking into account current compiler (clang or gcc).
 
-Dependencies can be setup using custom profile with following command (run from build dir)
+Conan misses gcc 8.2 in default config at the moment. The one can use pre-defined config file.
 
-`conan install .. <settings> --build missing`
-
-e.g.
-
-`conan install .. -s arch=x86_64 -s os=Linux -s compiler=clang -s compiler.version=7.0 -s compiler.libcxx=libstdc++11 -s build_type=Release -e CXX=clang++ -e CC=clang  --build missing`
-
-**Hint:** to upload build packages to server use the following commands
-
-```bash
-conan remote add <REMOTE> https://api.bintray.com/conan/malirod/stable
-conan user -p <APIKEY> -r <REMOTE> <USERNAME>
-conan install . -r <REMOTE>
-conan upload "*" -r <REMOTE> --all
-```
+`conan config install ./tools/conan/cfg`
 
 ## Install pylint - python checker
 
@@ -88,7 +75,7 @@ Run in project root to build debug version with clang
 
 To build release version with gcc run the following command
 
-`RUN mkdir build-gcc-release && cd build-gcc-release && cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release .. && make -j$(nproc)`
+`RUN mkdir build-gcc-release && cd build-gcc-release && CXX=g++ cmake -DCMAKE_BUILD_TYPE=Release .. && make -j$(nproc)`
 
 ### Build with sanitizers (clang)
 

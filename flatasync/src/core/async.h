@@ -180,13 +180,13 @@ boost::optional<T> RunAsyncAnyResult(std::initializer_list<std::function<boost::
   };
 
   ResultType result;
-  DeferProceed([ handlers = std::move(handlers), &result ](HandlerType proceed) {
+  DeferProceed([handlers = std::move(handlers), &result](HandlerType proceed) {
     std::shared_ptr<Counter> counter = std::make_shared<Counter>([&result, proceed](ResultType&& res) {
       result = std::move(res);
       proceed();
     });
     for (const auto& handler : handlers) {
-      RunAsync([ counter, handler = std::move(handler) ] {
+      RunAsync([counter, handler = std::move(handler)] {
         ResultType result = handler();
         if (result) {
           counter->TryProceed(std::move(result));

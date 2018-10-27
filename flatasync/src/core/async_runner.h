@@ -32,6 +32,11 @@ class AsyncRunner {
   ~AsyncRunner();
 
   /**
+   * Default ctor deleted explicitly. Make cppcheck happy.
+   */
+  AsyncRunner() = delete;
+
+  /**
    * Schedule execution of the continuation.
    */
   void Proceed();
@@ -99,7 +104,7 @@ class AsyncRunner {
    * Factory method which creates AsyncRunner with specified handler and scheduler.
    * @param handler Async operation to be executed.
    * @param scheduler Scheduler which will process async operation.
-   * @return Async operation state which allows to control exection flow (Cancel, Timedout)
+   * @return Async operation state which allows to control exception flow (Cancel, Timedout)
    */
   static AsyncOpState Create(HandlerType handler, IScheduler& scheduler);
 
@@ -169,7 +174,7 @@ class AsyncRunner {
 bool IsCurrentThreadHasAsyncRunner();
 
 /**
- * Return ref to runner assinged to current thread. Assert if no AsyncRunnner is attached.
+ * Return ref to runner assigned to current thread. Assert if no AsyncRunner is attached.
  * @return AsyncRunner attached to current thread.
  */
 AsyncRunner& GetCurrentThreadAsyncRunner();

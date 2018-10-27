@@ -25,7 +25,7 @@ AsyncOpState rms::core::RunAsync(HandlerType handler) {
 
 void rms::core::RunAsyncTimes(int32_t n, HandlerType handler) {
   assert(n > 0);
-  RunAsync(n == 1 ? handler : [ n, handler = std::move(handler) ] {
+  RunAsync(n == 1 ? handler : [n, handler = std::move(handler)] {
     for (int32_t i = 0; i < n; ++i) {
       RunAsync(handler);
     }
@@ -87,7 +87,7 @@ rms::core::Waiter::~Waiter() {
 
 rms::core::Waiter& rms::core::Waiter::RunAsync(HandlerType handler) {
   auto& holder = proceeder_;
-  core::RunAsync([ holder, handler = std::move(handler) ] { handler(); });
+  core::RunAsync([holder, handler = std::move(handler)] { handler(); });
   return *this;
 }
 
@@ -147,8 +147,9 @@ rms::core::Timeout::Timeout(int ms)
 
 rms::core::Timeout::~Timeout() {
   LOG_AUTO_TRACE();
-  timer_.cancel_one();
-  HandleEvents();
+  // Use cancel_one with explicit error code to prevent potentian throw from another version of cancel_one
+  boost::system::error_code error_code;
+  timer_.cancel_one(error_code);
 }
 
 rms::core::IScheduler& rms::core::GetCurrentThreadScheduler() {

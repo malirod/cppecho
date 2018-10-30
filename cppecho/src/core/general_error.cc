@@ -25,7 +25,7 @@ std::error_code rms::core::make_error_code(GeneralError error) noexcept {
 }
 
 const char* rms::core::ErrorCategory::name() const noexcept {
-  return "GenenalError";
+  return "GeneralError";
 }
 
 std::string rms::core::ErrorCategory::message(int error_value) const {

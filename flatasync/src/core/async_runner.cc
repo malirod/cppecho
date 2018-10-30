@@ -53,7 +53,7 @@ void rms::core::AsyncRunner::Defer(HandlerType handler) {
 
 void rms::core::AsyncRunner::DeferProceed(ProceedHandlerType proceed) {
   LOG_AUTO_TRACE();
-  Defer([ this, proceed = std::move(proceed) ] { proceed(ProceedHandler()); });
+  Defer([this, proceed = std::move(proceed)] { proceed(ProceedHandler()); });
 }
 
 void rms::core::AsyncRunner::SwitchTo(IScheduler& dst) {
@@ -142,7 +142,7 @@ void rms::core::AsyncRunner::WaitAll() {
 rms::core::AsyncOpState rms::core::AsyncRunner::Start(HandlerType handler) {
   LOG_AUTO_TRACE();
   auto op_state = GetOpState();
-  Schedule([ handler = std::move(handler), this ]() mutable {
+  Schedule([handler = std::move(handler), this]() mutable {
     MakeGuard()->Start([handler = std::move(handler)] {
       LOG_DEBUG("Coroutine started");
       try {

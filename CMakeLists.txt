@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.12)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake-common-utils")
 include(PreferClang)
@@ -6,7 +6,7 @@ include(PreferCcache)
 include(DefaultDebug)
 include(PreferGoldLinker)
 
-project(flatasync VERSION 1.0 LANGUAGES CXX)
+project(flatasync VERSION 1.0 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -21,7 +21,7 @@ conan_basic_setup(TARGETS)
 
 include(CTest)
 
-# Add possibility to sinitize code
+# Add possibility to sanitize code
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/sanitizers-cmake/cmake")
 find_package(Sanitizers REQUIRED)
 
@@ -45,15 +45,10 @@ if (BUILD_TESTING)
 endif()
 
 include(ClangTidy)
-include(IWYU)
 include(PrepareDoxygen)
-
-# Setup clang static analyzer
-add_custom_target(clang-static-analyzer
-    COMMAND scan-build --use-analyzer=/usr/bin/clang++-5.0 make
-    VERBATIM)
+include(ClangStaticAnalyzer)
 
 # Copy default config to the output dir
-# Manual run of the executable is expected fron build dir diectly
+# Manual run of the executable is expected from build dir directly
 # bin/testrunner
 configure_file(config/logger.cfg logger.cfg COPYONLY)

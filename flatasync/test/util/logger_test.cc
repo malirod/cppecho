@@ -98,9 +98,7 @@ class Bar {
   }
 
   static void OutputTestLogLinesFmt() {
-    // cppcheck-suppress unreadVariable
     const std::size_t index1 = 17;
-    // cppcheck-suppress unreadVariable
     const std::size_t index2 = 18;
     LOG_TRACEF("Trace class line. Number #{}, #{}", index1, index2);
     LOG_DEBUGF("Debug class line. Number #{}, #{}", index1, index2);
@@ -156,8 +154,7 @@ TEST(TestLogger, LogFromFreeFunctionFromAnonymousNamespace) {
 
 TEST(TestLogger, LogFromClassMethodWithFormat) {
   const auto action = []() {
-    Foo::Bar bar;
-    bar.OutputTestLogLinesFmt();
+    Foo::Bar::OutputTestLogLinesFmt();
     const auto log_content = GetLogOutput();
     TestContains(log_content, "[Foo.Bar][TRACE]:Trace class line. Number #17, #18");
     TestContains(log_content, "[Foo.Bar][DEBUG]:Debug class line. Number #17, #18");
@@ -172,8 +169,7 @@ TEST(TestLogger, LogFromClassMethodWithFormat) {
 
 TEST(TestLogger, LogFromClassMethod) {
   const auto action = []() {
-    Foo::Bar bar;
-    bar.OutputTestLogLines();
+    Foo::Bar::OutputTestLogLines();
     const auto log_content = GetLogOutput();
     TestContains(log_content, "[Foo.Bar][TRACE]:Trace class line");
     TestContains(log_content, "[Foo.Bar][DEBUG]:Debug class line");
@@ -188,8 +184,7 @@ TEST(TestLogger, LogFromClassMethod) {
 
 TEST(TestLogger, AutoTrace) {
   const auto action = []() {
-    Foo::Bar bar;
-    bar.OutputAutoTrace();
+    Foo::Bar::OutputAutoTrace();
     const auto log_content = GetLogOutput();
     // Trace output is compiler specific due to __func__ usage
     TestContains(log_content, "[Foo.Bar][TRACE]:ENTER");

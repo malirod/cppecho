@@ -101,9 +101,7 @@ void Deferer::Start(HandlerType handler) {
 
 void Deferer::Resume() {
   if (coro_) {
-    if (coro_) {
-      coro_();
-    }
+    coro_();
   }
 }
 

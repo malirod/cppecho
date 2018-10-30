@@ -80,7 +80,7 @@
               <optional>
                 <attribute name="type">
                   <data type="string">
-                    <param name="pattern">([a-zA-Z_][a-zA-Z_0-9]*[ ])*([a-zA-Z_][a-zA-Z_0-9]*::)*[a-zA-Z_][a-zA-Z_0-9]*([ ]?[*])*</param>
+                    <param name="pattern">([a-zA-Z_][a-zA-Z_0-9]*[ ])*([a-zA-Z_][a-zA-Z_0-9]*::)*[a-zA-Z_][a-zA-Z_0-9]*([ ]?[*&amp;])*</param>
                   </data>
                 </attribute>
               </optional>
@@ -154,7 +154,7 @@
                   <element name="not-uninit"><empty/></element>
                   <element name="valid">
                     <data type="string">
-                      <param name="pattern">(-?[0-9]*[,:])*([-]?[0-9]+)?</param>
+                      <param name="pattern">(-?[0-9]*(\.[0-9]+)?[,:])*([-]?[0-9]+(\.[0-9]+)?)?</param>
                     </data>
                   </element>
                   <element name="minsize">

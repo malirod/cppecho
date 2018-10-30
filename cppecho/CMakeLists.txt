@@ -1,5 +1,5 @@
-set(LIB_NAME basecppecho)
-set(APP_NAME cppecho)
+set(LIB_NAME cppecho)
+set(APP_NAME echosrv)
 
 set(SRC_LIST
     "src/core/engine.cc"
@@ -31,20 +31,22 @@ add_coverage(${APP_NAME})
 target_link_libraries(${APP_NAME} PRIVATE ${LIB_NAME})
 
 if (BUILD_TESTING)
-    set(TEST_LIB_NAME "test${LIB_NAME}")
+    set(TEST_LIB_NAME "${LIB_NAME}_test")
 
     set(TEST_SRC_LIST
         "test/core/engine_test.cc"
         "test/core/general_error_test.cc")
 
-    add_library(${TEST_LIB_NAME} ${TEST_SRC_LIST})
+    add_library(${TEST_LIB_NAME} OBJECT ${TEST_SRC_LIST})
     add_library(${COMMON_NAMESPACE}::${TEST_LIB_NAME} ALIAS ${TEST_LIB_NAME})
+
+    set_property(GLOBAL APPEND PROPERTY test_targets ${COMMON_NAMESPACE}::${TEST_LIB_NAME})
 
     add_sanitizers(${TEST_LIB_NAME})
     list(APPEND LCOV_REMOVE_PATTERNS "'*test/*'")
     add_coverage(${TEST_LIB_NAME})
 
-    target_include_directories(${TEST_LIB_NAME} PUBLIC test)
+    target_include_directories(${TEST_LIB_NAME} PRIVATE test)
     target_compile_options(${TEST_LIB_NAME} PRIVATE ${COMMON_CPP_FLAGS})
-    target_link_libraries(${TEST_LIB_NAME} PUBLIC ${COMMON_NAMESPACE}::${LIB_NAME} ${COMMON_NAMESPACE}::testflatasync CONAN_PKG::gtest)
+    target_link_libraries(${TEST_LIB_NAME} PUBLIC ${COMMON_NAMESPACE}::${LIB_NAME} CONAN_PKG::gtest)
 endif()

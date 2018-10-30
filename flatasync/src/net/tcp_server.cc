@@ -168,13 +168,8 @@ void rms::net::TcpServer::Stop() {
 }
 
 std::size_t rms::net::TcpServer::GetConnectedCount() const {
-  std::size_t result = 0u;
-  for (auto&& item : client_connections_) {
-    if (item) {
-      ++result;
-    }
-  }
-  return result;
+  return std::count_if(
+      std::begin(client_connections_), std::end(client_connections_), [](const auto& item) { return item; });
 }
 
 boost::optional<TcpServerIdType> rms::net::TcpServer::GetNewConnectionIndex() const {

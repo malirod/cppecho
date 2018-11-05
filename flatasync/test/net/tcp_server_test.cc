@@ -20,7 +20,7 @@
 #include "core/ischeduler.h"
 #include "net/alias.h"
 
-DECLARE_GLOBAL_GET_LOGGER("Test.Net.TCPServer");
+DECLARE_GLOBAL_GET_LOGGER("Test.Net.TCPServer")
 
 namespace {
 

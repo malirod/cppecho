@@ -3,7 +3,7 @@
 #pragma once
 
 #include <memory>
-#include <string>  // IWYU pragma: keep
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -101,54 +101,54 @@ class TcpServer {
   void Write(TcpServerIdType id, const BufferType& buffer);
 
   using OnListeningType = boost::signals2::signal<void()>;
-  using OnListeningSubsriberType = OnListeningType::slot_type;
+  using OnListeningSubscriberType = OnListeningType::slot_type;
 
   /**
    * Register to OnListening which will be fired when server socket is up and running. Server should be started first.
    * @param subscriber Slot which will be fired when server socket is ready and listening.
    * @return Connection of the signal to slot.
    */
-  boost::signals2::connection SubscribeOnListening(const OnListeningSubsriberType& subscriber);
+  boost::signals2::connection SubscribeOnListening(const OnListeningSubscriberType& subscriber);
 
   using OnConnectedType = boost::signals2::signal<void(TcpServerIdType id)>;
-  using OnConnectedSubsriberType = OnConnectedType::slot_type;
+  using OnConnectedSubscriberType = OnConnectedType::slot_type;
 
   /**
    * Register to OnConnected which will be fired when new client is connected. Server should be started first.
    * @param subscriber Slot which will be fired when new client is connected.
    * @return Connection of the signal to slot.
    */
-  boost::signals2::connection SubscribeOnConnected(const OnConnectedSubsriberType& subscriber);
+  boost::signals2::connection SubscribeOnConnected(const OnConnectedSubscriberType& subscriber);
 
   using OnDataType = boost::signals2::signal<void(TcpServerIdType id, const BufferType& data)>;
-  using OnDataSubsriberType = OnDataType::slot_type;
+  using OnDataSubscriberType = OnDataType::slot_type;
 
   /**
    * Register to OnData which will be fired when data is received from client. Server should be started first.
    * @param subscriber Slot which will be fired when data is received from client.
    * @return Connection of the signal to slot.
    */
-  boost::signals2::connection SubscribeOnData(const OnDataSubsriberType& subscriber);
+  boost::signals2::connection SubscribeOnData(const OnDataSubscriberType& subscriber);
 
   using OnDisconnectedType = boost::signals2::signal<void(TcpServerIdType id)>;
-  using OnDisconnectedSubsriberType = OnDisconnectedType::slot_type;
+  using OnDisconnectedSubscriberType = OnDisconnectedType::slot_type;
 
   /**
    * Register to OnDisconnected which will be fired when client has disconnected. Server should be started first.
    * @param subscriber Slot which will be fired when client has disconnected.
    * @return Connection of the signal to slot.
    */
-  boost::signals2::connection SubscribeOnDisconnected(const OnDisconnectedSubsriberType& subscriber);
+  boost::signals2::connection SubscribeOnDisconnected(const OnDisconnectedSubscriberType& subscriber);
 
   using OnStoppedType = boost::signals2::signal<void()>;
-  using OnStoppedSubsriberType = OnStoppedType::slot_type;
+  using OnStoppedSubscriberType = OnStoppedType::slot_type;
 
   /**
    * Register to OnStopped which will be fired when server has stopped. Server should be started first.
    * @param subscriber Slot which will be fired when server has stopped.
    * @return Connection of the signal to slot.
    */
-  boost::signals2::connection SubscribeOnStopped(const OnStoppedSubsriberType& subscriber);
+  boost::signals2::connection SubscribeOnStopped(const OnStoppedSubscriberType& subscriber);
 
  private:
   DECLARE_GET_LOGGER("Net.TcpServer")
@@ -162,8 +162,6 @@ class TcpServer {
   void RaiseOnClosed();
 
   std::size_t GetConnectedCount() const;
-
-  const int max_connections_;
 
   bool is_running_ = false;
 

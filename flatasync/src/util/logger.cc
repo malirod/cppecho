@@ -7,7 +7,7 @@
 #include <log4cplus/ndc.h>
 #include <log4cplus/config.hxx>
 
-#include <fstream>  // IWYU pragma: keep
+#include <fstream>
 
 namespace {
 

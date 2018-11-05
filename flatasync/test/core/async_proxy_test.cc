@@ -39,8 +39,6 @@ TEST(TestAsyncProxy, RunObjMethodsInAnotherContext) {
   const auto main_thread_name = thread_pool_main.GetName();
   const auto net_thread_name = thread_pool_net.GetName();
 
-  std::atomic_int value{0};
-
   AsyncProxy<Foo>().Attach(thread_pool_net);
 
   boost::barrier barrier{2};

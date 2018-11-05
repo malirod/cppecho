@@ -15,7 +15,7 @@
 #include <utility>
 #include "net/alias.h"
 
-DECLARE_GLOBAL_GET_LOGGER("Test.Net.TcpSocket");
+DECLARE_GLOBAL_GET_LOGGER("Test.Net.TcpSocket")
 
 namespace {
 
@@ -52,7 +52,7 @@ TEST(TestTcpSocket, SocketEchoTest) {
           acceptor.DoAccept([&](std::shared_ptr<TcpSocket> accepted_socket) {
             ASSERT_TRUE(accepted_socket);
 
-            // Ensure that new connection has disbled Nagle's algorythm
+            // Ensure that new connection has disbled Nagle's algorithm
             const auto socket_opts = accepted_socket->GetSocketOpts();
             ASSERT_TRUE(socket_opts.at(TcpSocket::SocketOpt::NoDelay));
 

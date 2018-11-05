@@ -4,7 +4,7 @@
 
 #include <atomic>
 #include <exception>
-#include <string>  // IWYU pragma: keep
+#include <string>
 #include <thread>
 #include "util/logger.h"
 #include "util/singleton.h"
@@ -58,28 +58,28 @@ class ThreadUtil {
   static std::string GetCurrentThreadId();
 
   /**
-   * Generate sequental thread number.
+   * Generate sequential thread number.
    * @return New thread number.
    */
   static int GenNewThreadNumber();
 
   /**
    * Set asio io service for the current thread.
-   * @param ioservice Asio io service to be assosiated with current thread.
+   * @param ioservice Asio io service to be associated with current thread.
    */
-  static void SetCurrentThreadIoSerivce(rms::core::IIoService& ioservice);
+  static void SetCurrentThreadIoService(rms::core::IIoService& ioservice);
 
   /**
-   * Get asio io service assosiatedw with curent thread.
-   * @return Asio io service assosiated with current thread.
+   * Get asio io service associated with curent thread.
+   * @return Asio io service associated with current thread.
    */
-  static rms::core::IIoService& GetCurrentThreadIoSerivce();
+  static rms::core::IIoService& GetCurrentThreadIoService();
 
   /**
    * Factory for threads.
    * @tparam Action Task type to be executed on new thread.
    * @param action Task type to be executed on new thread.
-   * @param name Thread name. Number is calcualted automatically.
+   * @param name Thread name. Number is calculated automatically.
    * @return created thread.
    */
   template <typename Action>
@@ -88,7 +88,7 @@ class ThreadUtil {
 
 /**
  * Sleep current thread for specified amount of msecs.
- * @param ms Msecs to spleep for.
+ * @param ms Msecs to sleep for.
  */
 void SleepFor(int ms);
 

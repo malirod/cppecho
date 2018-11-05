@@ -28,14 +28,6 @@ using rms::util::ThreadUtil;
 
 DECLARE_GLOBAL_GET_LOGGER("Core.AsyncRunnerTest")
 
-namespace {
-
-auto GetAsioService(rms::core::IIoService& io_service) -> decltype(io_service.GetAsioService()) {
-  return io_service.GetAsioService();
-}
-
-}  // namespace
-
 TEST(TestAsync, RunAsyncOnce) {
   ThreadPool thread_pool_main{1u, "main"};
   GetDefaultSchedulerAccessorInstance().Attach(thread_pool_main);

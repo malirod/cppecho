@@ -3,7 +3,7 @@
 #include "util/logger.h"
 #include <gtest/gtest.h>
 #include <cstdio>
-#include <fstream>  // IWYU pragma: keep
+#include <fstream>
 #include <string>
 
 DECLARE_GLOBAL_GET_LOGGER("Logger.Global")

@@ -15,7 +15,7 @@
 #include <memory>
 #include "net/alias.h"
 
-DECLARE_GLOBAL_GET_LOGGER("Test.Core.Engine");
+DECLARE_GLOBAL_GET_LOGGER("Test.Core.Engine")
 
 namespace {
 

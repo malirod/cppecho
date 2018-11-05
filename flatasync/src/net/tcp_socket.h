@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 #include <array>
-#include <string>  // IWYU pragma: keep
+#include <string>
 #include "net/alias.h"
 #include "util/enum_util.h"
 #include "util/logger.h"
@@ -83,7 +83,7 @@ class TcpSocket : public std::enable_shared_from_this<TcpSocket> {
   /**
    * Read some data available in socket. Should be called within async task. Suspends execution until result is
    * received.
-   * @return Pair of buffer and erorr code (result of async operation)
+   * @return Pair of buffer and error code (result of async operation)
    */
   std::pair<BufferType, ErrorType> ReadPartial();
 
@@ -133,7 +133,7 @@ class TcpSocket : public std::enable_shared_from_this<TcpSocket> {
   TcpServerIdType GetId() const;
 
   /**
-   * Set soket id.
+   * Set socket id.
    * @param id Socket id.
    */
   void SetId(TcpServerIdType id);
@@ -147,32 +147,29 @@ class TcpSocket : public std::enable_shared_from_this<TcpSocket> {
   SocketOptsMap GetSocketOpts() const;
 
   using OnDataType = boost::signals2::signal<void(TcpSocket& socket, const BufferType& data)>;
-  using OnDataSubsriberType = OnDataType::slot_type;
+  using OnDataSubscriberType = OnDataType::slot_type;
 
   /**
    * Register to OnData event which will be fired when data is received.
    * @param subscriber Slot which will be fired when data is received.
    * @return Connection of the signal to slot.
    */
-  boost::signals2::connection SubscribeOnData(const OnDataSubsriberType& subscriber);
+  boost::signals2::connection SubscribeOnData(const OnDataSubscriberType& subscriber);
 
   using OnDisconnectedType = boost::signals2::signal<void(TcpSocket& socket)>;
-  using OnDisconnectedSubsriberType = OnDisconnectedType::slot_type;
+  using OnDisconnectedSubscriberType = OnDisconnectedType::slot_type;
 
   /**
    * Register to OnDisconnected which will be fired when socket is disconnected.
    * @param subscriber Slot which will be fired when socket is disconnected.
    * @return Connection of the signal to slot.
    */
-  boost::signals2::connection SubscribeOnDisconnected(const OnDisconnectedSubsriberType& subscriber);
+  boost::signals2::connection SubscribeOnDisconnected(const OnDisconnectedSubscriberType& subscriber);
 
  private:
   DECLARE_GET_LOGGER("Net.Socket")
 
   AsioTcpSocketType socket_;
-
-  constexpr static const int MAX_BUFFER = 1024;
-  std::array<uint8_t, MAX_BUFFER> buffer_in_ = {};
 
   OnDataType on_data_;
 

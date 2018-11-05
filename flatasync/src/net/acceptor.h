@@ -5,7 +5,7 @@
 #include <memory>
 
 #include <boost/asio.hpp>
-#include <string>  // IWYU pragma: keep
+#include <string>
 #include "net/alias.h"
 #include "util/logger.h"
 

@@ -171,13 +171,13 @@ rms::net::TcpSocket::SocketOptsMap rms::net::TcpSocket::GetSocketOpts() const {
   return {{SocketOpt::NoDelay, no_delay_option.value()}};
 }
 
-boost::signals2::connection rms::net::TcpSocket::SubscribeOnData(const OnDataSubsriberType& subscriber) {
+boost::signals2::connection rms::net::TcpSocket::SubscribeOnData(const OnDataSubscriberType& subscriber) {
   LOG_AUTO_TRACE();
   return on_data_.connect(subscriber);
 }
 
 boost::signals2::connection rms::net::TcpSocket::SubscribeOnDisconnected(
-    const OnDisconnectedSubsriberType& subscriber) {
+    const OnDisconnectedSubscriberType& subscriber) {
   LOG_AUTO_TRACE();
   return on_disconnected_.connect(subscriber);
 }

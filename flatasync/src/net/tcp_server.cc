@@ -34,8 +34,7 @@ std::size_t GetSocketIndex(TcpServerIdType id) {
 
 }  // namespace
 
-rms::net::TcpServer::TcpServer(int max_connections)
-    : max_connections_(max_connections), client_connections_(max_connections) {}
+rms::net::TcpServer::TcpServer(int max_connections) : client_connections_(max_connections) {}
 
 rms::net::TcpServer::~TcpServer() = default;
 
@@ -197,28 +196,28 @@ void rms::net::TcpServer::StopClient(TcpServerIdType id) {
   });
 }
 
-boost::signals2::connection rms::net::TcpServer::SubscribeOnListening(const OnListeningSubsriberType& subscriber) {
+boost::signals2::connection rms::net::TcpServer::SubscribeOnListening(const OnListeningSubscriberType& subscriber) {
   LOG_AUTO_TRACE();
   return on_listening_.connect(subscriber);
 }
 
-boost::signals2::connection rms::net::TcpServer::SubscribeOnConnected(const OnConnectedSubsriberType& subscriber) {
+boost::signals2::connection rms::net::TcpServer::SubscribeOnConnected(const OnConnectedSubscriberType& subscriber) {
   LOG_AUTO_TRACE();
   return on_connected_.connect(subscriber);
 }
 
-boost::signals2::connection rms::net::TcpServer::SubscribeOnData(const OnDataSubsriberType& subscriber) {
+boost::signals2::connection rms::net::TcpServer::SubscribeOnData(const OnDataSubscriberType& subscriber) {
   LOG_AUTO_TRACE();
   return on_data_.connect(subscriber);
 }
 
 boost::signals2::connection rms::net::TcpServer::SubscribeOnDisconnected(
-    const OnDisconnectedSubsriberType& subscriber) {
+    const OnDisconnectedSubscriberType& subscriber) {
   LOG_AUTO_TRACE();
   return on_disconnected_.connect(subscriber);
 }
 
-boost::signals2::connection rms::net::TcpServer::SubscribeOnStopped(const OnStoppedSubsriberType& subscriber) {
+boost::signals2::connection rms::net::TcpServer::SubscribeOnStopped(const OnStoppedSubscriberType& subscriber) {
   LOG_AUTO_TRACE();
   return on_stopped_.connect(subscriber);
 }

@@ -9,7 +9,7 @@
 #include "core/async.h"
 #include "util/logger.h"
 
-DECLARE_GLOBAL_GET_LOGGER("Net.Util");
+DECLARE_GLOBAL_GET_LOGGER("Net.Util")
 
 rms::net::NetworkServiceAccessor& rms::net::GetNetworkServiceAccessorInstance() {
   return rms::util::single<NetworkServiceAccessor>();

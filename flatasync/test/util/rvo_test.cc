@@ -179,7 +179,6 @@ TEST_F(TestRVO, NRVOWithOneReturn) {
 
 TEST_F(TestRVO, MoveInsteadOfNRVO) {
   auto result = []() {
-    auto bar = Bar();
     auto value = int{100};
     // get some random value to prevent optimization
     const Foo some_object{static_cast<int>(time(nullptr))};

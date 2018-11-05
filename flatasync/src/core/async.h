@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <functional>
 #include <initializer_list>
-#include <utility>  // IWYU pragma: keep
+#include <utility>
 
 #include "core/alias.h"
 #include "core/async_op_state.h"

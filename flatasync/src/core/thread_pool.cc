@@ -18,7 +18,7 @@ rms::core::ThreadPool::ThreadPool(const std::size_t thread_count, const char* na
   for (std::size_t i = 0u; i < thread_count; ++i) {
     threads_.emplace_back(util::ThreadUtil::CreateThread(
         [this] {
-          util::ThreadUtil::SetCurrentThreadIoSerivce(*this);
+          util::ThreadUtil::SetCurrentThreadIoService(*this);
           barrier_.wait();
           while (true) {
             asio_service_.run();

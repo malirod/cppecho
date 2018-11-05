@@ -11,7 +11,7 @@
 #include "net/util.h"
 #include "util/logger.h"
 
-DECLARE_GLOBAL_GET_LOGGER("Test.Net.Resolver");
+DECLARE_GLOBAL_GET_LOGGER("Test.Net.Resolver")
 
 namespace {
 

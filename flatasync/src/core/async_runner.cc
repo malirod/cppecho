@@ -103,7 +103,7 @@ rms::core::IScheduler& rms::core::AsyncRunner::GetScheduler() {
 }
 
 rms::core::IIoService& rms::core::AsyncRunner::GetIoService() {
-  return util::ThreadUtil::GetCurrentThreadIoSerivce();
+  return util::ThreadUtil::GetCurrentThreadIoService();
 }
 
 rms::core::AsyncOpState rms::core::AsyncRunner::GetOpState() const {
@@ -148,7 +148,7 @@ rms::core::AsyncOpState rms::core::AsyncRunner::Start(HandlerType handler) {
       try {
         handler();
       } catch (const std::exception& e) {
-        LOG_ERROR("Exception in Deferer: " << e.what());
+        LOG_DEBUG("Exception in Deferrer (will not be propagated): " << e.what());
       }
       LOG_DEBUG("Coroutine ended");
     });

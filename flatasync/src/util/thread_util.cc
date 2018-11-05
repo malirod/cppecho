@@ -39,11 +39,11 @@ std::string rms::util::ThreadUtil::GetCurrentThreadId() {
   return "[" + std::string(GetCurrentThreadName()) + ":" + std::to_string(GetCurrentThreadNumber()) + "]";
 }
 
-void rms::util::ThreadUtil::SetCurrentThreadIoSerivce(rms::core::IIoService& ioservice) {
+void rms::util::ThreadUtil::SetCurrentThreadIoService(rms::core::IIoService& ioservice) {
   thrd_ptr_ioservice = &ioservice;
 }
 
-rms::core::IIoService& rms::util::ThreadUtil::GetCurrentThreadIoSerivce() {
+rms::core::IIoService& rms::util::ThreadUtil::GetCurrentThreadIoService() {
   assert(thrd_ptr_ioservice != nullptr);
   return *thrd_ptr_ioservice;
 }

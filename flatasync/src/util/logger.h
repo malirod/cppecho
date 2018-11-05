@@ -49,14 +49,14 @@
 #endif  // CUT_OFF_DEBUG_LOG
 
 #include <log4cplus/logger.h>
-#include <log4cplus/loggingmacros.h>  // IWYU pragma: export
+#include <log4cplus/loggingmacros.h>
 
 #include <bits/stringfwd.h>
 #include <iosfwd>
-#include <ostream>  // IWYU pragma: export
-#include <string>   // IWYU pragma: export
+#include <ostream>
+#include <string>
 
-#include <fmt/format.h>  // IWYU pragma: export
+#include <fmt/format.h>
 
 #define IMPL_LOGGER_CLASS_TYPE_ log4cplus::Logger
 #define IMPL_LOGGER_NAMESPACE_ rms::util::logging
@@ -104,10 +104,10 @@ class NDCWrapper {
 #define IMPLEMENT_STATIC_LOGGER(logger_name) \
   static auto logger = IMPL_LOGGER_CLASS_TYPE_::getInstance(LOG4CPLUS_TEXT(logger_name))
 
-#define DECLARE_GET_LOGGER(logger_name)         \
-  static IMPL_LOGGER_CLASS_TYPE_& GetLogger() { \
-    IMPLEMENT_STATIC_LOGGER(logger_name);       \
-    return logger;                              \
+#define DECLARE_GET_LOGGER(logger_name)                         \
+  [[gnu::unused]] static IMPL_LOGGER_CLASS_TYPE_& GetLogger() { \
+    IMPLEMENT_STATIC_LOGGER(logger_name);                       \
+    return logger;                                              \
   }
 
 #define DECLARE_GLOBAL_GET_LOGGER(logger_name) \
